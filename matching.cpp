@@ -1,4 +1,5 @@
 #include "order.h"
+using namespace std;
 
 class Matching {
     public:
@@ -39,9 +40,24 @@ void Matching::checkOrder(Order order){
 };
 
 void Matching::limitBuy(){
+    //Go to LOWEST price level in BUY PL hashmap (unordered map)
+    //Fill orders from lowest price level UNTIL no more valid orders (partial fill - Lack of liquidity) OR order filled
+    // IF partial order, store remaining orders within BUY order storage as the latest order within that specific price level
+    
+}
+
+void Matching::limitSell(){
+    
+}
+
+void Matching::marketBuy(){
+    
+}
+
+void Matching::marketSell(){
     
 }
 
 int main(){
-    Order input = {LIMIT, BUY, 100, 10.0};
+    Order input = {1, LIMIT, BUY, 100, 10.0};
 };
