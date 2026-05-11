@@ -1,4 +1,6 @@
 #include "order.h"
+#include "priceStorage.h"
+
 using namespace std;
 
 class Matching {
@@ -12,7 +14,7 @@ class Matching {
 
         // Methods
         void checkOrder(Order order);
-        void limitBuy();
+        void limitBuy(int price, int qty);
         void limitSell();
         void marketBuy();
         void marketSell();
@@ -24,7 +26,7 @@ void Matching::checkOrder(Order order){
     switch (order.type) {
         case LIMIT:
             switch(order.side){
-                case BUY: Matching::limitBuy(); break;
+                case BUY: Matching::limitBuy(order.price, order.qty); break;
                 case SELL: Matching::limitSell(); break;
             }
             break;
@@ -39,10 +41,19 @@ void Matching::checkOrder(Order order){
 
 };
 
-void Matching::limitBuy(){
+void Matching::limitBuy(int limitOrderPrice, int LimitOrderQty){
     //Go to LOWEST price level in BUY PL hashmap (unordered map)
     //Fill orders from lowest price level UNTIL no more valid orders (partial fill - Lack of liquidity) OR order filled
     // IF partial order, store remaining orders within BUY order storage as the latest order within that specific price level
+    priceStorage priceStore;
+    int counter = 0;
+    int sellPrice = priceStore.getPrice(counter);
+
+    while (LimitOrderQty > 0 && limitOrderPrice >= sellPrice){
+        counter++;
+
+        LimitOrderQty - 
+    }
     
 }
 

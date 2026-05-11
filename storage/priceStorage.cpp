@@ -1,9 +1,9 @@
-#include <map>
-#include <tuple>
-using namespace std;
+#include "priceStorage.h" 
 
-class priceStorage{
-    public:
-        std::map<int, tuple<int, int>> buyPriceLevelStorage;
-        std::map<int, tuple<int, int>> sellPriceLevelStorage;
-};
+
+// This doesnt actually work, because indexes are stored not actual values, must now go to the nodeStorage and find the node stored at that specific node.
+int priceStorage::getPrice(int index){
+    //Getting the 1st element (the tuple) and then the head (Earliest sell order in at that price level)
+    int sellPrice = get<0>(sellPriceLevelStorage[index]);
+    return sellPrice;
+}
