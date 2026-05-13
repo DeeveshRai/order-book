@@ -1,16 +1,21 @@
 #include "order.h"
 #include "priceStorage.h"
+#include "orderNode.h"
+#include "nodeStorage.h"
 
 using namespace std;
 
 class Matching {
     public:
         // Attributes
-
+        Matching(NodeStorage& nodes, priceStorage& prices)
+            : nodes_(nodes), prices_(prices) {}
         // Methods
 
     private:
         // Attributes
+        NodeStorage& nodes_;
+        priceStorage& prices_;
 
         // Methods
         void checkOrder(Order order);
@@ -41,18 +46,28 @@ void Matching::checkOrder(Order order){
 
 };
 
-void Matching::limitBuy(int limitOrderPrice, int LimitOrderQty){
-    //Go to LOWEST price level in BUY PL hashmap (unordered map)
+void Matching::limitBuy(int limitOrderPrice, int limitOrderQty){
+    //Go to LOWEST price level in BUY PL hashmap (ordered map)
     //Fill orders from lowest price level UNTIL no more valid orders (partial fill - Lack of liquidity) OR order filled
     // IF partial order, store remaining orders within BUY order storage as the latest order within that specific price level
-    priceStorage priceStore;
-    int counter = 0;
-    int sellPrice = priceStore.getPrice(counter);
+    int remaining = limitOrderQty;
 
-    while (LimitOrderQty > 0 && limitOrderPrice >= sellPrice){
-        counter++;
+    while (limitOrderQty > 0 && limitOrderPrice >= prices_.bestAskPrice){
 
-        LimitOrderQty - 
+        int askPrice = prices_.bestAskPrice();
+        int headIdx = prices_.getSellHeadIndex(askPrice);
+        
+        if (limitOrderQty >= currentNode.qty){
+            int temp = limitOrderQty;
+            limitOrderQty=-currentNode.qty;
+            currentNode.qty-=temp; 
+        }
+        else {
+
+        }
+
+        orderNode currentNode = nodes_.getNode(counter);
+        
     }
     
 }
@@ -70,5 +85,5 @@ void Matching::marketSell(){
 }
 
 int main(){
-    Order input = {1, LIMIT, BUY, 100, 10.0};
+
 };

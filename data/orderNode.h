@@ -10,8 +10,8 @@ struct orderNode {
     Side side;
     int qty;
     double price;
-    orderNode* prev;
-    orderNode* next;
+    int prevIndex;
+    int nextIndex;
 };
 
 #endif
