@@ -47,29 +47,30 @@ void Matching::checkOrder(Order order){
 };
 
 void Matching::limitBuy(int limitOrderPrice, int limitOrderQty){
-    //Go to LOWEST price level in BUY PL hashmap (ordered map)
-    //Fill orders from lowest price level UNTIL no more valid orders (partial fill - Lack of liquidity) OR order filled
-    // IF partial order, store remaining orders within BUY order storage as the latest order within that specific price level
-    int remaining = limitOrderQty;
 
-    while (limitOrderQty > 0 && limitOrderPrice >= prices_.bestAskPrice){
+    int qtyInOrder =  limitOrderQty;
+    int bestAsk = prices_.bestAskPrice();
+    orderNode bestAskNode = nodes_.getNode(bestAsk);
+    int bestAskQty = bestAskNode.qty;
 
-        int askPrice = prices_.bestAskPrice();
-        int headIdx = prices_.getSellHeadIndex(askPrice);
+    while (true){
         
-        if (limitOrderQty >= currentNode.qty){
-            int temp = limitOrderQty;
-            limitOrderQty=-currentNode.qty;
-            currentNode.qty-=temp; 
-        }
-        else {
+
+        if (limitOrderQty <= bestAskNode.qty){
+
+            bestAskQty = bestAskQty - limitOrderQty;
+
+        } 
+        else{
+
+            qtyInOrder = limitOrderPrice - bestAskQty;
+            //Bestask now becomes BestAskNode.nextIndex's price
+
+            //BestAskNode = BestAskNode.nextInd
 
         }
-
-        orderNode currentNode = nodes_.getNode(counter);
-        
     }
-    
+
 }
 
 void Matching::limitSell(){

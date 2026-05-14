@@ -18,7 +18,7 @@ int priceStorage::bestAskPrice(){
 }
 
 int priceStorage::getSellHeadIndex(int price){
-    int index = 
+    int index = get<0>(sellPriceLevelStorage[0]);
     return index;
-
+    
 }

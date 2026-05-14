@@ -10,6 +10,6 @@ class NodeStorage {
 
     private:
         std::vector<int> emptyIndexes(std::vector<orderNode> array);
-        
+        //Make function that gets updates node for next index
         
 };
