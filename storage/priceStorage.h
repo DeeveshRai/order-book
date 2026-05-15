@@ -6,10 +6,13 @@ class priceStorage{
     public:
         priceStorage() = default;
 
-        std::map<int, tuple<int, int>> buyPriceLevelStorage;
-        std::map<int, tuple<int, int>> sellPriceLevelStorage;
+        std::map<int, vector<int, int>> buyPriceLevelStorage;
+        std::map<int, vector<int, int>> sellPriceLevelStorage;
 
         int getSellHeadIndex(int idx);
         int bestAskPrice();
+        int bestBidPrice();
+        void updateBuyTail(int price);
+        int getBuyTailIndex(int price);
         
 };

@@ -1,15 +1,10 @@
 #include "priceStorage.h" 
 #include "nodeStorage.h"
 
-// NodeStorage nodes;
-// // This doesnt actually work, because indexes are stored not actual values, must now go to the nodeStorage and find the node stored at that specific node.
-// int priceStorage::getBestNode(int index){
-//     //Getting the 1st element (the tuple) and then the head (Earliest sell order in at that price level)
-//     orderNode order = nodes.getNode(index);
-//     return order.price;
-// }
+// TODO: Function that replaces head with next
 
-// TODO: Function that returns the index
+NodeStorage nodeStorage;
+
 
 int priceStorage::bestAskPrice(){
     int bestAsk = sellPriceLevelStorage.begin()->first;
@@ -17,8 +12,24 @@ int priceStorage::bestAskPrice(){
     return bestAsk;
 }
 
+int priceStorage::bestBidPrice(){
+    int bestBid = buyPriceLevelStorage.begin()->first;
+
+    return bestBid;
+}
+
 int priceStorage::getSellHeadIndex(int price){
-    int index = get<0>(sellPriceLevelStorage[0]);
+    int index = sellPriceLevelStorage[0][0];
     return index;
     
+}
+
+int priceStorage::getBuyTailIndex(int price){
+    int index = buyPriceLevelStorage[price][1];
+    return index;
+}
+
+void priceStorage::updateBuyTail(int price){
+    int newNodeIndex = nodeStorage.getSize() - 1;
+    buyPriceLevelStorage[price][1] = newNodeIndex;
 }

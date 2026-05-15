@@ -20,7 +20,7 @@ class Matching {
         // Methods
         void checkOrder(Order order);
         void limitBuy(int price, int qty);
-        void limitSell();
+        void limitSell(int price, int qty);
         void marketBuy();
         void marketSell();
 };
@@ -32,7 +32,7 @@ void Matching::checkOrder(Order order){
         case LIMIT:
             switch(order.side){
                 case BUY: Matching::limitBuy(order.price, order.qty); break;
-                case SELL: Matching::limitSell(); break;
+                case SELL: Matching::limitSell(order.price, order.qty); break;
             }
             break;
 
@@ -46,35 +46,51 @@ void Matching::checkOrder(Order order){
 
 };
 
-void Matching::limitBuy(int limitOrderPrice, int limitOrderQty){
-
-    int qtyInOrder =  limitOrderQty;
+void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
+    //CRITIQUE: You are still copying nodes accidentally
+    int qtyInOrder =  limitBuyQty;
     int bestAsk = prices_.bestAskPrice();
     orderNode bestAskNode = nodes_.getNode(bestAsk);
     int bestAskQty = bestAskNode.qty;
 
-    while (true){
+    //Potential empty-book issue
+    while (qtyInOrder > 0 && bestAsk && bestAsk <= limitBuyPrice){
         
-
-        if (limitOrderQty <= bestAskNode.qty){
-
-            bestAskQty = bestAskQty - limitOrderQty;
-
+        if (qtyInOrder <= bestAskNode.qty){
+            bestAskQty = bestAskQty - qtyInOrder;
+            qtyInOrder = 0;
         } 
         else{
-
-            qtyInOrder = limitOrderPrice - bestAskQty;
-            //Bestask now becomes BestAskNode.nextIndex's price
-
-            //BestAskNode = BestAskNode.nextInd
-
+            qtyInOrder = qtyInOrder - bestAskQty;
+            bestAskNode = nodes_.getNextNode(bestAskNode.nextIndex);
+            bestAsk = bestAskNode.price;
         }
+    }
+
+    //Now handle partial
+    if (qtyInOrder > 0){
+        //ADD NODE TO:
+        //1) NodeStorage
+        int prev = prices_.getBuyTailIndex(limitBuyPrice); 
+        nodes_.addNode(OrderType::LIMIT, Side::BUY, qtyInOrder, limitBuyPrice, prev);
+        //2) sellStorage
+        prices_.updateBuyTail(limitBuyPrice);
+        //To add, must replace BUY tail with new node
+        // + newNode.next = None -> Done
+        //+ newNode.prev = prevTail - > Done
+        // + oldNode.next = newNode -> Done
     }
 
 }
 
-void Matching::limitSell(){
+void Matching::limitSell(int limitSellPrice, int limitSellQty){
     
+    // int qtyInOrder = limitSellQty;
+    // int bestBid = prices_.bestBidPrice();
+    // orderNode bestBidNode = nodes_.getNode(bestBid);
+    // int bestBidQty = bestBidNode.qty;
+
+    // while (qtyInOrder > 0 && )
 }
 
 void Matching::marketBuy(){
