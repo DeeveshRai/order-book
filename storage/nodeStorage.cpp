@@ -21,6 +21,7 @@ int NodeStorage::getSize(){
 }
 
 void NodeStorage::addNode(OrderType type, Side side, int qty, double price, int prev){
+    //TODO: IMPLEMENT UUID LOGIC 
     orderNode newNode{1, type, side, qty, price, prev, NULL};
     store.push_back(newNode);
     
