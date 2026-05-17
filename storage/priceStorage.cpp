@@ -29,7 +29,17 @@ int priceStorage::getBuyTailIndex(int price){
     return index;
 }
 
+int priceStorage::getSellTailIndex(int price){
+    int index = sellPriceLevelStorage[price][1];
+    return index;
+}
+
 void priceStorage::updateBuyTail(int price){
     int newNodeIndex = nodeStorage.getSize() - 1;
     buyPriceLevelStorage[price][1] = newNodeIndex;
+}
+
+void priceStorage::updateSellTail(int price){
+    int newNodeIndex = nodeStorage.getSize()-1;
+    sellPriceLevelStorage[price][1] = newNodeIndex;
 }

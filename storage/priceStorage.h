@@ -13,6 +13,8 @@ class priceStorage{
         int bestAskPrice();
         int bestBidPrice();
         void updateBuyTail(int price);
+        void updateSellTail(int price);
         int getBuyTailIndex(int price);
+        int getSellTailIndex(int price);
         
 };

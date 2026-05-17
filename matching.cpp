@@ -21,8 +21,8 @@ class Matching {
         void checkOrder(Order order);
         void limitBuy(int price, int qty);
         void limitSell(int price, int qty);
-        void marketBuy();
-        void marketSell();
+        void marketBuy(int qty);
+        void marketSell(int qty);
 };
 
 void Matching::checkOrder(Order order){
@@ -38,8 +38,8 @@ void Matching::checkOrder(Order order){
 
         case MARKET:
             switch(order.side){
-                case BUY: Matching::marketBuy(); break;
-                case SELL: Matching::marketSell(); break;
+                case BUY: Matching::marketBuy(order.qty); break;
+                case SELL: Matching::marketSell(order.qty); break;
             }
             break;
     }
@@ -69,36 +69,76 @@ void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
 
     //Now handle partial
     if (qtyInOrder > 0){
-        //ADD NODE TO:
-        //1) NodeStorage
         int prev = prices_.getBuyTailIndex(limitBuyPrice); 
         nodes_.addNode(OrderType::LIMIT, Side::BUY, qtyInOrder, limitBuyPrice, prev);
-        //2) sellStorage
         prices_.updateBuyTail(limitBuyPrice);
-        //To add, must replace BUY tail with new node
-        // + newNode.next = None -> Done
-        //+ newNode.prev = prevTail - > Done
-        // + oldNode.next = newNode -> Done
     }
 
 }
 
 void Matching::limitSell(int limitSellPrice, int limitSellQty){
     
-    // int qtyInOrder = limitSellQty;
-    // int bestBid = prices_.bestBidPrice();
-    // orderNode bestBidNode = nodes_.getNode(bestBid);
-    // int bestBidQty = bestBidNode.qty;
+    int qtyInOrder = limitSellQty;
+    int bestBid = prices_.bestBidPrice();
+    orderNode bestBidNode = nodes_.getNode(bestBid);
+    int bestBidQty = bestBidNode.qty;
 
-    // while (qtyInOrder > 0 && )
+    while (qtyInOrder > 0 && bestBid && bestBid <= limitSellPrice){
+
+        if (qtyInOrder <= bestBidNode.qty){
+            bestBidQty = bestBidQty - qtyInOrder;
+            qtyInOrder = 0;
+        }
+        else{
+            qtyInOrder = qtyInOrder - bestBidQty;
+            bestBidNode = nodes_.getNextNode(bestBidNode.nextIndex);
+            bestBid = bestBidNode.price;
+        }
+    }
+
+    if (qtyInOrder > 0){
+        int prev = prices_.getSellTailIndex(limitSellPrice);
+        nodes_.addNode(OrderType::LIMIT, Side::SELL, qtyInOrder, limitSellPrice, prev);
+        prices_.updateSellTail(limitSellPrice);
+    }
 }
 
-void Matching::marketBuy(){
+void Matching::marketBuy(int marketBuyQty){
     
+    int qtyInOrder = marketBuyQty;
+    int bestBid = prices_.bestBidPrice();
+    orderNode bestBidNode = nodes_.getNode(bestBid);
+    int bestBidQty = bestBidNode.qty;
+
+    while (qtyInOrder > 0 && bestBid){
+
+        if (qtyInOrder <= bestBidNode.qty){
+            bestBidQty = bestBidQty - qtyInOrder;
+            qtyInOrder = 0;
+        }
+        else{
+            qtyInOrder = qtyInOrder - bestBidQty;
+        }
+    }
 }
 
-void Matching::marketSell(){
-    
+void Matching::marketSell(int marketSellQty){
+
+    int qtyInOrder = marketSellQty;
+    int bestBid = prices_.bestBidPrice();
+    orderNode bestBidNode = nodes_.getNode(bestBid);
+    int bestBidQty = bestBidNode.qty;
+
+    while (qtyInOrder > 0 && bestBid){
+
+        if (qtyInOrder <= bestBidNode.qty){
+            bestBidQty = bestBidQty - qtyInOrder;
+            qtyInOrder = 0;
+        }
+        else{
+            qtyInOrder = qtyInOrder - bestBidQty;
+        }
+    }
 }
 
 int main(){
