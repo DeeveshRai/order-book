@@ -1,8 +1,8 @@
-#ifndef ORDERNODE.h
-#define ORDERNODE.h
+#include "orderType.h"
+#include "side.h"
 
-enum OrderType { LIMIT, MARKET };
-enum Side { BUY, SELL };
+#ifndef ORDERNODE_H
+#define ORDERNODE_H
 
 struct orderNode {
     int id;

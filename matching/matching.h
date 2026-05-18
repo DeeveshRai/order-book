@@ -1,9 +1,10 @@
-#include "order.h"
-#include "priceStorage.h"
-#include "orderNode.h"
-#include "nodeStorage.h"
+#ifndef MATCHING_H
+#define MATCHING_H
 
-using namespace std;
+#include "data/order.h"
+
+class NodeStorage;
+class priceStorage;
 
 class Matching {
     public:
@@ -26,3 +27,5 @@ class Matching {
         void marketSell(int qty);
         
 };
+
+    #endif

@@ -1,14 +1,18 @@
+#ifndef PRICESTORAGE_H
+#define PRICESTORAGE_H
+
 #include <map>
-#include <tuple>
-#include "orderNode.h"
-using namespace std;
+#include <vector>
+#include "data/orderNode.h"
+
+class NodeStorage;
 
 class priceStorage{
     public:
-        priceStorage() = default;
+        priceStorage(NodeStorage& nodes) : nodes_(nodes) {}
 
-        std::map<int, vector<int, int>> buyPriceLevelStorage;
-        std::map<int, vector<int, int>> sellPriceLevelStorage;
+        std::map<int, std::vector<int>> buyPriceLevelStorage;
+        std::map<int, std::vector<int>> sellPriceLevelStorage;
 
         int getSellHeadIndex(int idx);
         int bestAskPrice();
@@ -19,5 +23,10 @@ class priceStorage{
         int getSellTailIndex(int price);
         void replaceHead(int idx, int price, Side side);
         void replaceTail(int idx, int price, Side side);
+
+    private:
+        NodeStorage& nodes_;
         
 };
+
+#endif

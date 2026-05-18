@@ -1,10 +1,7 @@
-#include "priceStorage.h" 
-#include "nodeStorage.h"
+#include "storage/priceStorage.h" 
+#include "storage/nodeStorage.h"
 
 // TODO: Function that replaces head with next
-
-NodeStorage nodeStorage;
-
 
 int priceStorage::bestAskPrice(){
     int bestAsk = sellPriceLevelStorage.begin()->first;
@@ -35,12 +32,12 @@ int priceStorage::getSellTailIndex(int price){
 }
 
 void priceStorage::updateBuyTail(int price){
-    int newNodeIndex = nodeStorage.getSize() - 1;
+    int newNodeIndex = nodes_.getSize() - 1;
     buyPriceLevelStorage[price][1] = newNodeIndex;
 }
 
 void priceStorage::updateSellTail(int price){
-    int newNodeIndex = nodeStorage.getSize()-1;
+    int newNodeIndex = nodes_.getSize()-1;
     sellPriceLevelStorage[price][1] = newNodeIndex;
 }
 

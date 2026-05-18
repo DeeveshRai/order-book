@@ -1,14 +1,13 @@
-#include "cancel.h"
-#include "idMap.h"
-#include "orderNode.h"
-#include "nodeStorage.h"
-#include "priceStorage.h"
+#include "cancel/cancel.h"
+#include "storage/idMap.h"
+#include "data/orderNode.h"
+#include "storage/nodeStorage.h"
+#include "storage/priceStorage.h"
 
 using namespace std;
 
-idMap ids;
 NodeStorage nodes;
-priceStorage prices;
+idMap ids(nodes);
 
 void Cancel::cancelOrder(int id){
     orderNode node = ids.getNodeById(id);
@@ -22,12 +21,12 @@ void Cancel::cancelOrder(int id){
      */
 
     //COULD ERROR IF NULL -> FIX
-    orderNode newNext = nodes.getNode(node.nextIndex);
-    orderNode newPrev = nodes.getNode(node.prevIndex);
+    orderNode newNext = nodes_.getNode(node.nextIndex);
+    orderNode newPrev = nodes_.getNode(node.prevIndex);
 
     if (node.prevIndex == NULL){
         //Handle replacing head
-        prices.replaceHead(node.nextIndex, node.price, node.side);
+        prices_.replaceHead(node.nextIndex, node.price, node.side);
         newNext.prevIndex = NULL;
 
     }
@@ -37,7 +36,7 @@ void Cancel::cancelOrder(int id){
     
     if(node.nextIndex == NULL){
         //Handle replacing tail
-        prices.replaceTail(node.nextIndex, node.price, node.side);
+        prices_.replaceTail(node.nextIndex, node.price, node.side);
         newPrev.nextIndex = NULL;
 
     }

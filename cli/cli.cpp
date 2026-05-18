@@ -2,8 +2,10 @@
 #include <string>
 #include <vector>
 #include <sstream>
-#include "order.h"
-#include "matching.h"
+#include "data/order.h"
+#include "storage/nodeStorage.h"
+#include "storage/priceStorage.h"
+#include "matching/matching.h"
 
 using namespace std;
 
@@ -52,8 +54,8 @@ int main() {
     OrderType type = parseOrderType(tokens[0]);
     Side side = parseSide(tokens[1]);
 
-    priceStorage prices;
     NodeStorage nodes;
+    priceStorage prices(nodes);
     Matching match(nodes, prices);
     match.doMatching(type, side, stoi(tokens[2]), stoi(tokens[3]));
 

@@ -1,4 +1,9 @@
-#include "matching.h"
+#include "matching/matching.h"
+#include "storage/nodeStorage.h"
+#include "storage/priceStorage.h"
+#include <iostream>
+
+using namespace std;
 
 void Matching::checkOrder(Order order){
     //Routes based off of order type and buy and sell
@@ -114,10 +119,7 @@ void Matching::marketSell(int marketSellQty){
             qtyInOrder = qtyInOrder - bestBidQty;
         }
     }
-
-void doMatching(OrderType type, Side side, int qty, double price);
 }
 
-int main(){
-    
-};
+void Matching::doMatching(OrderType type, Side side, int qty, double price){
+}

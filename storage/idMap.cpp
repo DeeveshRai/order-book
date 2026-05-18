@@ -1,13 +1,9 @@
-#include "idMap.h"
-#include "orderNode.h"
-#include "nodeStorage.h"
-using namespace std;
-
-NodeStorage nodes;
+#include "storage/idMap.h"
+#include "storage/nodeStorage.h"
 
 orderNode idMap::getNodeById(int id){
     int index = idStore[id];
-    return nodes.getNode(index);
+    return nodes_.getNode(index);
 
 }
 

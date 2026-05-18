@@ -1,11 +1,10 @@
-#include "nodeStorage.h"
-#include "priceStorage.h"
+#include "storage/nodeStorage.h"
+#include <cstddef>
 
 std::vector<int> NodeStorage::emptyIndexes(std::vector<orderNode> array){
     //IMPLEMENT LATER
+    return {};
 };
-
-priceStorage priceStore;
 
 orderNode NodeStorage::getNode(int index){
     return store[index];
