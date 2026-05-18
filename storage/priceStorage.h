@@ -1,5 +1,6 @@
 #include <map>
 #include <tuple>
+#include "orderNode.h"
 using namespace std;
 
 class priceStorage{
@@ -16,5 +17,7 @@ class priceStorage{
         void updateSellTail(int price);
         int getBuyTailIndex(int price);
         int getSellTailIndex(int price);
+        void replaceHead(int idx, int price, Side side);
+        void replaceTail(int idx, int price, Side side);
         
 };

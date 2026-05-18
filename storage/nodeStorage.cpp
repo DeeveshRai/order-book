@@ -7,12 +7,7 @@ std::vector<int> NodeStorage::emptyIndexes(std::vector<orderNode> array){
 
 priceStorage priceStore;
 
-orderNode NodeStorage::getNode(int price){
-    int index = priceStore.getSellHeadIndex(price);
-    return store.at(index);
-}
-
-orderNode NodeStorage::getNextNode(int index){
+orderNode NodeStorage::getNode(int index){
     return store[index];
 }
 

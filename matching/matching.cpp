@@ -37,7 +37,7 @@ void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
         } 
         else{
             qtyInOrder = qtyInOrder - bestAskQty;
-            bestAskNode = nodes_.getNextNode(bestAskNode.nextIndex);
+            bestAskNode = nodes_.getNode(bestAskNode.nextIndex);
             bestAsk = bestAskNode.price;
         }
     }
@@ -66,7 +66,7 @@ void Matching::limitSell(int limitSellPrice, int limitSellQty){
         }
         else{
             qtyInOrder = qtyInOrder - bestBidQty;
-            bestBidNode = nodes_.getNextNode(bestBidNode.nextIndex);
+            bestBidNode = nodes_.getNode(bestBidNode.nextIndex);
             bestBid = bestBidNode.price;
         }
     }

@@ -1,9 +1,16 @@
-#include <unordered_map>
+#include "idMap.h"
+#include "orderNode.h"
+#include "nodeStorage.h"
 using namespace std;
 
-class idMap{
-    public:
-        idMap(){
-            std::unordered_map<int, int> idMap;
-        }
-};
+NodeStorage nodes;
+
+orderNode idMap::getNodeById(int id){
+    int index = idStore[id];
+    return nodes.getNode(index);
+
+}
+
+void idMap::removeOrderById(int id){
+    idStore.erase(id);
+}

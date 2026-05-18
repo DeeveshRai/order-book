@@ -7,8 +7,6 @@ class NodeStorage {
         NodeStorage() = default;
         std::vector<orderNode> store;
         orderNode getNode(int index);
-        orderNode getNextNode(int index);
-        // orderNode createNode(Side side, OrderType type);
         void addNode(OrderType type, Side side, int qty, double price, int prev);
         int getSize();
 

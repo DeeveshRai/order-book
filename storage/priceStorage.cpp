@@ -43,3 +43,23 @@ void priceStorage::updateSellTail(int price){
     int newNodeIndex = nodeStorage.getSize()-1;
     sellPriceLevelStorage[price][1] = newNodeIndex;
 }
+
+void priceStorage::replaceHead(int idx, int price, Side side){
+    if (side == Side::BUY){
+        buyPriceLevelStorage[price][0] = idx;
+    } 
+
+    else if (side == Side::SELL){
+        sellPriceLevelStorage[price][0] = idx;
+    }
+}
+
+void priceStorage::replaceTail(int idx, int price, Side side){
+    if (side == Side::BUY){
+        buyPriceLevelStorage[price][1] = idx;
+    } 
+
+    else if (side == Side::SELL){
+        sellPriceLevelStorage[price][1] = idx;
+    }
+}
