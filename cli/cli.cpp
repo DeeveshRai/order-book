@@ -19,46 +19,60 @@ OrderType parseOrderType(string orderType){
         return type;
     }
 
-    else{
-        cout << "Invalid Order Type";
-    }
+    // else{
+    //     cout << "Invalid Order Type";
+    // }
 }
 
 Side parseSide(string sideIn){
-    Side side;
+    
     
     if (sideIn == "BUY"){
         Side side = Side::BUY;
+        return side;
     }
     else if (sideIn == "SELL"){
         Side side = Side::SELL;
+        return side;
     }
 
-    else{
-        cout << "Invalid Side";
-    }
+    // else{
+    //     cout << "Invalid Side";
+    // }
 
-    return side;
+    // std::cout << "PARSED SIDE" << side;
+    // return side;
 }
 
 int main() {
-    string S, T;
-    std::vector<string> tokens;
+
+    string S;
     getline(cin, S);
-
-    stringstream stringStream(S);
-
-    while (getline(stringStream, T, ' '))
-        tokens.push_back(T);
-
-    OrderType type = parseOrderType(tokens[0]);
-    Side side = parseSide(tokens[1]);
 
     NodeStorage nodes;
     priceStorage prices(nodes);
     Matching match(nodes, prices);
-    match.doMatching(type, side, stoi(tokens[2]), stoi(tokens[3]));
 
+    if (S == "1"){
+
+        //TEMP TRUE WHILE LOOP JUST TO GET IT RUNNING
+        while (true){  
+            string S, T;
+            std::vector<string> tokens;
+            getline(cin, S);
+
+            stringstream stringStream(S);
+
+            while (getline(stringStream, T, ' '))
+                tokens.push_back(T);
+
+            OrderType type = parseOrderType(tokens[0]);
+            Side side = parseSide(tokens[1]);
+            
+            match.doMatching(type, side, stoi(tokens[2]), stoi(tokens[3]));
+
+        }
+    }
     
     return 0;
 }

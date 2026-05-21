@@ -4,6 +4,7 @@
 #include <map>
 #include <vector>
 #include "data/orderNode.h"
+#include "data/order.h"
 
 class NodeStorage;
 
@@ -19,10 +20,12 @@ class priceStorage{
         int bestBidPrice();
         void updateBuyTail(int price);
         void updateSellTail(int price);
+        void addToBook(orderNode node);
         int getBuyTailIndex(int price);
         int getSellTailIndex(int price);
         void replaceHead(int idx, int price, Side side);
         void replaceTail(int idx, int price, Side side);
+        bool isEmpty(Side side);
 
     private:
         NodeStorage& nodes_;

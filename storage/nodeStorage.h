@@ -9,9 +9,10 @@ class NodeStorage {
         NodeStorage() = default;
 
         std::vector<orderNode> store;
-        orderNode getNode(int index);
-        void addNode(OrderType type, Side side, int qty, double price, int prev);
+        orderNode& getNode(int index);
+        orderNode addNode(OrderType type, Side side, int qty, double price, int prev, int next);
         int getSize();
+        void printNodes();
 
     private:
         std::vector<int> emptyIndexes(std::vector<orderNode> array);

@@ -13,6 +13,7 @@ class Matching {
             : nodes_(nodes), prices_(prices) {}
         // Methods
         void doMatching(OrderType type, Side side, int qty, double price);
+        void dumpBook();
 
     private:
         // Attributes

@@ -1,5 +1,7 @@
 #include "storage/priceStorage.h" 
 #include "storage/nodeStorage.h"
+#include "priceStorage.h"
+#include <iostream>
 
 // TODO: Function that replaces head with next
 
@@ -41,6 +43,17 @@ void priceStorage::updateSellTail(int price){
     sellPriceLevelStorage[price][1] = newNodeIndex;
 }
 
+void priceStorage::addToBook(orderNode node){
+    if (node.side == Side::BUY){
+        //std::map<int, std::vector<int>> buyPriceLevelStorage;
+        buyPriceLevelStorage.insert({node.price, {node.prevIndex, node.nextIndex}});
+    }
+
+    else{
+        sellPriceLevelStorage.insert({node.price, {node.prevIndex, node.nextIndex}});
+    }
+}
+
 void priceStorage::replaceHead(int idx, int price, Side side){
     if (side == Side::BUY){
         buyPriceLevelStorage[price][0] = idx;
@@ -58,5 +71,17 @@ void priceStorage::replaceTail(int idx, int price, Side side){
 
     else if (side == Side::SELL){
         sellPriceLevelStorage[price][1] = idx;
+    }
+}
+
+bool priceStorage::isEmpty(Side side){
+    if (side == Side::BUY){
+        return buyPriceLevelStorage.empty();
+    }
+    else if (side == Side::SELL){
+        return sellPriceLevelStorage.empty();
+    }
+    else{
+        std::cout << "THIS IS SIDE" << side;
     }
 }
