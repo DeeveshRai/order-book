@@ -22,10 +22,11 @@ class priceStorage{
         void updateSellTail(int price);
         void addToBook(orderNode node);
         int getBuyTailIndex(int price);
+        int getBuyHeadIndex(int price);
         int getSellTailIndex(int price);
         void replaceHead(int idx, int price, Side side);
         void replaceTail(int idx, int price, Side side);
-        bool isEmpty(Side side);
+        bool isEitherEmpty();
 
     private:
         NodeStorage& nodes_;

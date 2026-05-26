@@ -12,6 +12,7 @@ struct orderNode {
     double price;
     int prevIndex;
     int nextIndex;
+    bool active;
 };
 
 #endif

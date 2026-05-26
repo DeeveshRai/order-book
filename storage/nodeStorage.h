@@ -13,6 +13,7 @@ class NodeStorage {
         orderNode addNode(OrderType type, Side side, int qty, double price, int prev, int next);
         int getSize();
         void printNodes();
+        void removeNode(int index);
 
     private:
         std::vector<int> emptyIndexes(std::vector<orderNode> array);

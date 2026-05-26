@@ -17,8 +17,15 @@ int priceStorage::bestBidPrice(){
     return bestBid;
 }
 
+int priceStorage::getBuyHeadIndex(int price){
+    int index = buyPriceLevelStorage[price][0];
+    return index;
+    
+}
+
+
 int priceStorage::getSellHeadIndex(int price){
-    int index = sellPriceLevelStorage[0][0];
+    int index = sellPriceLevelStorage[price][0];
     return index;
     
 }
@@ -74,14 +81,6 @@ void priceStorage::replaceTail(int idx, int price, Side side){
     }
 }
 
-bool priceStorage::isEmpty(Side side){
-    if (side == Side::BUY){
-        return buyPriceLevelStorage.empty();
-    }
-    else if (side == Side::SELL){
-        return sellPriceLevelStorage.empty();
-    }
-    else{
-        std::cout << "THIS IS SIDE" << side;
-    }
+bool priceStorage::isEitherEmpty(){
+    return buyPriceLevelStorage.empty() && sellPriceLevelStorage.empty();
 }

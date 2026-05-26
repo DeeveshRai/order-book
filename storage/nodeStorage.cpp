@@ -1,6 +1,8 @@
 #include "storage/nodeStorage.h"
 #include <cstddef>
 #include <iostream>
+#include <cstdlib>
+#include "nodeStorage.h"
 
 std::vector<int> NodeStorage::emptyIndexes(std::vector<orderNode> array){
     //IMPLEMENT LATER
@@ -17,7 +19,9 @@ int NodeStorage::getSize(){
 
 orderNode NodeStorage::addNode(OrderType type, Side side, int qty, double price, int prev, int next){
     //TODO: IMPLEMENT UUID LOGIC 
-    orderNode newNode{1, type, side, qty, price, prev, next};
+    int rand = std::rand() % 10000;
+
+    orderNode newNode{rand, type, side, qty, price, prev, next, true};
     store.push_back(newNode);
     
     //Sets oldTail's next Index to be NewNode's index
@@ -30,5 +34,7 @@ void NodeStorage::printNodes(){
     for (auto& node : store){
         std::cout << node.qty;
     }
-
+}
+void NodeStorage::removeNode(int index){
+    store[index].active = false;
 }
