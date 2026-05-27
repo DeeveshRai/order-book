@@ -6,14 +6,21 @@
 using namespace std;
 
 void Matching::checkOrder(Order order){
-    if (prices_.isEitherEmpty() && (order.type == OrderType::LIMIT)){
+    if (prices_.isBuyStoreEmpty() && (order.type == OrderType::LIMIT)){
         orderNode node = nodes_.addNode(order.type, order.side, order.qty, order.price, 0, 0);
         
         prices_.addToBook(node);
         return;
     }
 
-    else{
+    if (prices_.isSellStoreEmpty() && (order.type == OrderType::LIMIT)){
+        orderNode node = nodes_.addNode(order.type, order.side, order.qty, order.price, 0, 0);
+        
+        prices_.addToBook(node);
+        return;
+    }
+
+    else {
 
         switch (order.type) {
             case LIMIT:

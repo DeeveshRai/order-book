@@ -81,6 +81,10 @@ void priceStorage::replaceTail(int idx, int price, Side side){
     }
 }
 
-bool priceStorage::isEitherEmpty(){
-    return buyPriceLevelStorage.empty() && sellPriceLevelStorage.empty();
+bool priceStorage::isBuyStoreEmpty(){
+    return buyPriceLevelStorage.empty();
+}
+
+bool priceStorage::isSellStoreEmpty(){
+    return sellPriceLevelStorage.empty();
 }

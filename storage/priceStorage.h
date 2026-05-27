@@ -26,7 +26,9 @@ class priceStorage{
         int getSellTailIndex(int price);
         void replaceHead(int idx, int price, Side side);
         void replaceTail(int idx, int price, Side side);
-        bool isEitherEmpty();
+        bool isBuyStoreEmpty();
+        bool isSellStoreEmpty();
+
 
     private:
         NodeStorage& nodes_;
