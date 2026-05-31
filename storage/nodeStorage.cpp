@@ -17,17 +17,23 @@ int NodeStorage::getSize(){
     return store.size();
 }
 
+// Needs to be made more robust, design to find the pointers in the function
+
+/*
+In order to find the pointers:
+1) Check if price/sell store is empty
+    - If empty, add to store with -1 guards
+    - If not empty, add to tail:
+        -> Replace current tail's nextIndex (-1) with newNode's index
+        -> newNode's prevIndex = Current Tail's index
+        -> newNode's nextIndex = -1 (guard) 
+*/
 orderNode NodeStorage::addNode(OrderType type, Side side, int qty, double price, int prev, int next){
     //TODO: IMPLEMENT UUID LOGIC 
     int rand = std::rand() % 10000;
 
     orderNode newNode{rand, type, side, qty, price, prev, next, true};
     store.push_back(newNode);
-    
-    //Sets oldTail's next Index to be NewNode's index
-    store[prev].nextIndex = store.size() - 1;
-
-    return newNode;
 }
 
 void NodeStorage::printNodes(){

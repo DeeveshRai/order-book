@@ -20,7 +20,7 @@ class priceStorage{
         int bestBidPrice();
         void updateBuyTail(int price);
         void updateSellTail(int price);
-        void addToBook(orderNode node);
+        void addToEmptyBook(int price, int prevIndex, int nextIndex, Side side);
         int getBuyTailIndex(int price);
         int getBuyHeadIndex(int price);
         int getSellTailIndex(int price);

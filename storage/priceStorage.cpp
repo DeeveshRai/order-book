@@ -41,23 +41,38 @@ int priceStorage::getSellTailIndex(int price){
 }
 
 void priceStorage::updateBuyTail(int price){
+    int currTailIndex = getBuyTailIndex(price);
     int newNodeIndex = nodes_.getSize() - 1;
     buyPriceLevelStorage[price][1] = newNodeIndex;
+    nodes_.store[currTailIndex].nextIndex = nodes_.store.size() -1;
 }
+
 
 void priceStorage::updateSellTail(int price){
-    int newNodeIndex = nodes_.getSize()-1;
+    int currTailIndex = getSellTailIndex(price);
+    int newNodeIndex = nodes_.getSize() - 1;
     sellPriceLevelStorage[price][1] = newNodeIndex;
+    nodes_.store[currTailIndex].nextIndex = nodes_.store.size() -1;
 }
 
-void priceStorage::addToBook(orderNode node){
-    if (node.side == Side::BUY){
+
+/*
+Refactor:
+1) If book empty:
+    -> Add both head and tail
+2) If book not empty:
+    -> Only change tail
+*/
+
+void priceStorage::addToEmptyBook(int price, int prevIndex, int nextIndex, Side side){
+    if (side == Side::BUY){
         //std::map<int, std::vector<int>> buyPriceLevelStorage;
-        buyPriceLevelStorage.insert({node.price, {node.prevIndex, node.nextIndex}});
+        buyPriceLevelStorage.insert({price, {prevIndex, nextIndex}});
+        
     }
 
-    else{
-        sellPriceLevelStorage.insert({node.price, {node.prevIndex, node.nextIndex}});
+    else if (side == Side::SELL){
+        sellPriceLevelStorage.insert({price, {prevIndex, nextIndex}});
     }
 }
 

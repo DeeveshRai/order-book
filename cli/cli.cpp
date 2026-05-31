@@ -68,7 +68,7 @@ int main() {
 
             OrderType type = parseOrderType(tokens[0]);
             Side side = parseSide(tokens[1]);
-            
+
             match.doMatching(type, side, stoi(tokens[2]), stoi(tokens[3]));
 
         }
