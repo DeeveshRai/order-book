@@ -20,6 +20,10 @@ class priceStorage{
         int bestBidPrice();
         void updateBuyTail(int price);
         void updateSellTail(int price);
+        void updateSellHead(orderNode node);
+        void updateBuyHead(orderNode node);
+        void updateSellHeadEdgeCase(orderNode node);
+        void updateBuyHeadEdgeCase(orderNode node);
         void addToEmptyBook(int price, int prevIndex, int nextIndex, Side side);
         int getBuyTailIndex(int price);
         int getBuyHeadIndex(int price);
@@ -28,7 +32,8 @@ class priceStorage{
         void replaceTail(int idx, int price, Side side);
         bool isBuyStoreEmpty();
         bool isSellStoreEmpty();
-
+        bool sellOneNodeCheck(int price);
+        bool buyOneNodeCheck(int price);
 
     private:
         NodeStorage& nodes_;

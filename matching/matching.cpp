@@ -52,23 +52,38 @@ void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
 
         return;
     }
+
     int qtyInOrder =  limitBuyQty;
     int bestAsk = prices_.bestAskPrice();
     int bestAskIndex = prices_.getSellHeadIndex(bestAsk);
-    orderNode& bestAskNode = nodes_.getNode(bestAskIndex);
+    int currentIndex = bestAskIndex;
 
-    //Potential empty-book issue
-    while (bestAskNode.active && qtyInOrder > 0 && bestAsk && bestAsk <= limitBuyPrice){
+    //Potential empty-book issue - FIXED
+    while (currentIndex != -1 && qtyInOrder > 0 && bestAsk && bestAsk <= limitBuyPrice){
+
+        orderNode& bestAskNode = nodes_.getNode(currentIndex);
         
         if (qtyInOrder <= bestAskNode.qty){
             bestAskNode.qty = bestAskNode.qty - qtyInOrder;
             qtyInOrder = 0;
+ 
         } 
         else{
             qtyInOrder = qtyInOrder - bestAskNode.qty;
             bestAskNode.active = false;
             bestAskNode.qty = 0;
-            bestAskNode = nodes_.getNode(bestAskNode.nextIndex);
+
+            if (prices_.sellOneNodeCheck(bestAskNode.price)){
+                prices_.updateSellHeadEdgeCase(bestAskNode);
+                break;
+            }
+
+            int nextIndex = bestAskNode.nextIndex;
+
+            prices_.updateSellHead(bestAskNode); 
+            nodes_.unlinkNode(bestAskNode);
+            currentIndex = nextIndex;
+            //Get node's index
             bestAsk = bestAskNode.price;
         }
     }
@@ -105,9 +120,12 @@ void Matching::limitSell(int limitSellPrice, int limitSellQty){
     int qtyInOrder = limitSellQty;
     int bestBid = prices_.bestBidPrice();
     int bestBidIndex = prices_.getBuyHeadIndex(bestBid);
-    orderNode& bestBidNode = nodes_.getNode(bestBidIndex);
+    int currentIndex = bestBidIndex;
 
-    while (bestBidNode.active && qtyInOrder > 0 && bestBid && bestBid <= limitSellPrice){
+    while (currentIndex != -1 && qtyInOrder > 0 && bestBid && bestBid <= limitSellPrice){
+
+        orderNode& bestBidNode = nodes_.getNode(currentIndex);
+
         if (qtyInOrder <= bestBidNode.qty){
             bestBidNode.qty = bestBidNode.qty - qtyInOrder;
             qtyInOrder = 0;
@@ -116,7 +134,19 @@ void Matching::limitSell(int limitSellPrice, int limitSellQty){
             qtyInOrder = qtyInOrder - bestBidNode.qty; 
             bestBidNode.active = false;
             bestBidNode.qty = 0;
-            bestBidNode = nodes_.getNode(bestBidNode.nextIndex);
+
+            if (prices_.buyOneNodeCheck(bestBidNode.price)){
+                prices_.updateBuyHeadEdgeCase(bestBidNode);
+                break;
+            }
+
+
+            int nextIndex = bestBidNode.nextIndex;
+
+            prices_.updateBuyHead(bestBidNode); 
+            nodes_.unlinkNode(bestBidNode);
+            currentIndex = nextIndex;
+            //Get node's index
             bestBid = bestBidNode.price;
         }
     }

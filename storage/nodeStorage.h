@@ -14,6 +14,7 @@ class NodeStorage {
         int getSize();
         void printNodes();
         void removeNode(int index);
+        void unlinkNode(orderNode node);
 
     private:
         std::vector<int> emptyIndexes(std::vector<orderNode> array);

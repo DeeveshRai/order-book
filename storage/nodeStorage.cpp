@@ -9,6 +9,7 @@ std::vector<int> NodeStorage::emptyIndexes(std::vector<orderNode> array){
     return {};
 };
 
+//DOESNT WORK THE WAY I WANT IT TO -> DO NOT USE
 orderNode& NodeStorage::getNode(int index){
     return store[index];
 }
@@ -43,4 +44,14 @@ void NodeStorage::printNodes(){
 }
 void NodeStorage::removeNode(int index){
     store[index].active = false;
+}
+
+//Need handling when only one node exists
+void NodeStorage::unlinkNode(orderNode node){
+
+    store[node.prevIndex].nextIndex = node.nextIndex;
+    store[node.nextIndex].prevIndex = node.prevIndex;
+
+    node.nextIndex = -2;
+    node.prevIndex = -2;
 }

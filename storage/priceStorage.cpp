@@ -55,6 +55,23 @@ void priceStorage::updateSellTail(int price){
     nodes_.store[currTailIndex].nextIndex = nodes_.store.size() -1;
 }
 
+void priceStorage::updateSellHead(orderNode node){
+    //Move head to node.nextIndex
+    sellPriceLevelStorage[node.price][0] = node.nextIndex; //Head index, Possibly fails here 
+}
+
+void priceStorage::updateBuyHead(orderNode node){
+    //Move head to node.nextIndex
+    buyPriceLevelStorage[node.price][0] = node.nextIndex; //Head index, Possibly fails here 
+}
+
+void priceStorage::updateSellHeadEdgeCase(orderNode node){
+    sellPriceLevelStorage.erase(node.price);
+}
+
+void priceStorage::updateBuyHeadEdgeCase(orderNode node){
+    buyPriceLevelStorage.erase(node.price);
+}
 
 /*
 Refactor:
@@ -102,4 +119,12 @@ bool priceStorage::isBuyStoreEmpty(){
 
 bool priceStorage::isSellStoreEmpty(){
     return sellPriceLevelStorage.empty();
+}
+
+bool priceStorage::sellOneNodeCheck(int price){
+    return sellPriceLevelStorage[price][0] == sellPriceLevelStorage[price][1];
+}
+
+bool priceStorage::buyOneNodeCheck(int price){
+    return buyPriceLevelStorage[price][0] == buyPriceLevelStorage[price][1];
 }
