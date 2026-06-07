@@ -12,8 +12,11 @@ class idMap{
 
         std::unordered_map<int, int> idStore;
 
-        orderNode getNodeById(int id);
+        orderNode& getNodeById(int id);
         void removeOrderById(int id);
+        void addNodeToStore(int id, int index);
+
+        void dumpStore();
 
     private:
         NodeStorage& nodes_;

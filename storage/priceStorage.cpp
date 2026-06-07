@@ -128,3 +128,13 @@ bool priceStorage::sellOneNodeCheck(int price){
 bool priceStorage::buyOneNodeCheck(int price){
     return buyPriceLevelStorage[price][0] == buyPriceLevelStorage[price][1];
 }
+
+void priceStorage::removePriceLevel(Side side, int price){
+    if (side == Side::BUY){
+        buyPriceLevelStorage.erase(price);
+    }
+
+    else if (side == Side::SELL){
+        sellPriceLevelStorage.erase(price);
+    }
+}

@@ -4,47 +4,57 @@
 #include "storage/nodeStorage.h"
 #include "storage/priceStorage.h"
 
+#include <iostream>
+
 using namespace std;
 
-NodeStorage nodes;
-idMap ids(nodes);
-
 void Cancel::cancelOrder(int id){
-    orderNode node = ids.getNodeById(id);
-    //This gets the node, now we have to remove it from all stores -> Price/Sell, IDMAP and NodeStorage
+    orderNode& node = ids_.getNodeById(id);
 
-    //Price/Sell
-    /*
-    Check if node.prev or node.next == None
-    If it is then it is a head/tail within the storage structures and therefore a new head/tail needs to be put in place
-    Else, nothing is needed for price/sell
-     */
-
-    //COULD ERROR IF NULL -> FIX
-    orderNode newNext = nodes_.getNode(node.nextIndex);
-    orderNode newPrev = nodes_.getNode(node.prevIndex);
-
-    if (node.prevIndex == NULL){
-        //Handle replacing head
-        prices_.replaceHead(node.nextIndex, node.price, node.side);
-        newNext.prevIndex = NULL;
+    //SINGLE NODE PATH
+    if (node.prevIndex == -1 && node.nextIndex == -1){
+        prices_.removePriceLevel(node.side, node.price);
+        ids_.removeOrderById(id);
+        node.active = false;
+        node.prevIndex = -2;
+        node.nextIndex = -2;
 
     }
-    else{
-        newNext.prevIndex = node.prevIndex;
+
+    else if (node.prevIndex == -1){
+        //Handle replacing head
+        orderNode& newNext = nodes_.getNode(node.nextIndex);
+        prices_.replaceHead(node.prevIndex, node.price, node.side);
+        ids_.removeOrderById(id);
+        node.active = false;
+        newNext.prevIndex = -1;
+        node.prevIndex = -2;
+
     }
     
-    if(node.nextIndex == NULL){
+    else if(node.nextIndex == -1){
         //Handle replacing tail
+        orderNode& newPrev = nodes_.getNode(node.prevIndex);
         prices_.replaceTail(node.nextIndex, node.price, node.side);
-        newPrev.nextIndex = NULL;
+        ids_.removeOrderById(id);
+        node.active = false;
+        newPrev.nextIndex = -1;
+        node.nextIndex = -2;
 
     }
-    else{
+    // MIDDLE HANDLE
+    else if (!(node.prevIndex == -1 && node.nextIndex == -1)){
+        orderNode& newNext = nodes_.getNode(node.nextIndex);
+        orderNode& newPrev = nodes_.getNode(node.prevIndex);
+
+        ids_.removeOrderById(id);
+        node.active = false;
+
+        newNext.prevIndex = node.prevIndex;
         newPrev.nextIndex = node.nextIndex;
+
+        node.prevIndex = -2;
+        node.nextIndex = -2;
+
     }
-
-    //IdMap removal
-    ids.removeOrderById(id);
-
 }

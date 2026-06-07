@@ -35,13 +35,10 @@ orderNode NodeStorage::addNode(OrderType type, Side side, int qty, double price,
 
     orderNode newNode{rand, type, side, qty, price, prev, next, true};
     store.push_back(newNode);
+
+    return newNode;
 }
 
-void NodeStorage::printNodes(){
-    for (auto& node : store){
-        std::cout << node.qty;
-    }
-}
 void NodeStorage::removeNode(int index){
     store[index].active = false;
 }

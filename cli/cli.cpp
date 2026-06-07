@@ -6,6 +6,8 @@
 #include "storage/nodeStorage.h"
 #include "storage/priceStorage.h"
 #include "matching/matching.h"
+#include "cancel/cancel.h"
+#include "storage/idMap.h"
 
 using namespace std;
 
@@ -19,9 +21,6 @@ OrderType parseOrderType(string orderType){
         return type;
     }
 
-    // else{
-    //     cout << "Invalid Order Type";
-    // }
 }
 
 Side parseSide(string sideIn){
@@ -36,43 +35,71 @@ Side parseSide(string sideIn){
         return side;
     }
 
-    // else{
-    //     cout << "Invalid Side";
-    // }
-
-    // std::cout << "PARSED SIDE" << side;
-    // return side;
 }
 
 int main() {
 
-    string S;
-    getline(cin, S);
-
     NodeStorage nodes;
     priceStorage prices(nodes);
-    Matching match(nodes, prices);
+    idMap ids(nodes);
+    Matching match(nodes, prices, ids);
+    Cancel cancel(nodes, prices, ids);
 
-    if (S == "1"){
+    //Temp condition
+    while (true){
 
-        //TEMP TRUE WHILE LOOP JUST TO GET IT RUNNING
-        while (true){  
+        string S;
+        getline(cin, S);
+
+        if (S == "1"){
+
+            //TEMP TRUE WHILE LOOP JUST TO GET IT RUNNING
+            while (true){  
+                string S, T;
+                std::vector<string> tokens;
+                getline(cin, S);
+
+                if (S == "exit"){
+                    break;
+                }
+
+                stringstream stringStream(S);
+
+                while (getline(stringStream, T, ' '))
+                    tokens.push_back(T);
+
+                OrderType type = parseOrderType(tokens[0]);
+                Side side = parseSide(tokens[1]);
+
+                match.doMatching(type, side, stoi(tokens[2]), stoi(tokens[3]));
+
+            }
+        }
+
+        //Cancel loop
+        else if (S == "2"){
             string S, T;
-            std::vector<string> tokens;
+            std::vector<string> ids;
             getline(cin, S);
-
             stringstream stringStream(S);
+            while (getline(stringStream, T, ' ')){
+                ids.push_back(T);
+            }
 
-            while (getline(stringStream, T, ' '))
-                tokens.push_back(T);
-
-            OrderType type = parseOrderType(tokens[0]);
-            Side side = parseSide(tokens[1]);
-
-            match.doMatching(type, side, stoi(tokens[2]), stoi(tokens[3]));
+            string cancellation = ids[0];
+            int id = stoi(ids[1]);
+            cancel.cancelOrder(id);
 
         }
+
+        else if (S == "dump"){
+            for (auto& node : nodes.store){
+                std::cout << "node id: " << node.id << "\n" << " node price: " << node.price << "\n" << " node qty: " << node.qty << "\n" << " node prevIndex: " << node.prevIndex <<
+                "\n" << " node nextIndex: " << node.nextIndex << "\n" << " node side: " << node.side << "\n" << "node type: "<< node.type << "\n" << "node active?" << node.active << "\n"; 
+            }
+        }
     }
+    
     
     return 0;
 }

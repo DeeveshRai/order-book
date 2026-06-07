@@ -34,6 +34,7 @@ class priceStorage{
         bool isSellStoreEmpty();
         bool sellOneNodeCheck(int price);
         bool buyOneNodeCheck(int price);
+        void removePriceLevel(Side side, int price);
 
     private:
         NodeStorage& nodes_;

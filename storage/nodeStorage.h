@@ -12,7 +12,6 @@ class NodeStorage {
         orderNode& getNode(int index);
         orderNode addNode(OrderType type, Side side, int qty, double price, int prev, int next);
         int getSize();
-        void printNodes();
         void removeNode(int index);
         void unlinkNode(orderNode node);
 

@@ -1,21 +1,23 @@
 #include "matching/matching.h"
 #include "storage/nodeStorage.h"
 #include "storage/priceStorage.h"
+#include "storage/idMap.h"
 #include <iostream>
 
 using namespace std;
 
 void Matching::checkOrder(Order order){
     if ((order.side == Side::BUY) && prices_.isBuyStoreEmpty() && prices_.isSellStoreEmpty() && (order.type == OrderType::LIMIT)){  
-        nodes_.addNode(order.type, order.side, order.qty, order.price, -1, -1);
+        orderNode newNode = nodes_.addNode(order.type, order.side, order.qty, order.price, -1, -1);
+        ids_.addNodeToStore(newNode.id, nodes_.getSize()-1);
         //Needs to be index in node store
         prices_.addToEmptyBook(order.price, nodes_.getSize() -1, nodes_.getSize() -1, order.side);
         return;
     }
 
     else if ((order.side == Side::SELL) && prices_.isSellStoreEmpty() && prices_.isBuyStoreEmpty() && (order.type == OrderType::LIMIT)){
-        nodes_.addNode(order.type, order.side, order.qty, order.price, -1, -1);
-        
+        orderNode newNode = nodes_.addNode(order.type, order.side, order.qty, order.price, -1, -1);
+        ids_.addNodeToStore(newNode.id, nodes_.getSize()-1);
         prices_.addToEmptyBook(order.price, nodes_.getSize() -1, nodes_.getSize() -1, order.side);
         return;
     }
@@ -49,6 +51,8 @@ void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
         orderNode newNode = nodes_.addNode(OrderType::LIMIT, Side::BUY, limitBuyQty, limitBuyPrice, currBuyTailIndex, -1);
         //Need to solve problem with price books and adding of indexes
         prices_.updateBuyTail(limitBuyPrice);
+        int newBuyTailIndex = prices_.getBuyTailIndex(limitBuyPrice);
+        ids_.addNodeToStore(newNode.id, newBuyTailIndex);
 
         return;
     }
@@ -94,12 +98,16 @@ void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
         if (prices_.buyPriceLevelStorage.empty()){
             orderNode newNode = nodes_.addNode(OrderType::LIMIT, Side::BUY, qtyInOrder, limitBuyPrice, -1, -1);
             prices_.addToEmptyBook(limitBuyPrice, nodes_.getSize() -1, nodes_.getSize() -1, Side::BUY);
+            int index = prices_.getBuyTailIndex(limitBuyPrice);
+            ids_.addNodeToStore(newNode.id, index);
 
         }
         else{
             int prev = prices_.getBuyTailIndex(limitBuyPrice); 
-            nodes_.addNode(OrderType::LIMIT, Side::BUY, qtyInOrder, limitBuyPrice, prev, -1);
+            orderNode newNode = nodes_.addNode(OrderType::LIMIT, Side::BUY, qtyInOrder, limitBuyPrice, prev, -1);
             prices_.updateBuyTail(limitBuyPrice);
+            int index = prices_.getBuyTailIndex(limitBuyPrice);
+            ids_.addNodeToStore(newNode.id, index);
 
         }
     }
@@ -114,6 +122,8 @@ void Matching::limitSell(int limitSellPrice, int limitSellQty){
         orderNode newNode = nodes_.addNode(OrderType::LIMIT, Side::SELL, limitSellQty, limitSellPrice, currSellTailIndex, -1);
         //Need to solve problem with price books and adding of indexes
         prices_.updateSellTail(limitSellPrice);
+        int index = prices_.getSellTailIndex(limitSellPrice);
+        ids_.addNodeToStore(newNode.id, index);
 
         return;
     }
@@ -155,12 +165,16 @@ void Matching::limitSell(int limitSellPrice, int limitSellQty){
         if (prices_.sellPriceLevelStorage.empty()){
             orderNode newNode = nodes_.addNode(OrderType::LIMIT, Side::SELL, qtyInOrder, limitSellPrice, -1, -1);
             prices_.addToEmptyBook(newNode.price, nodes_.getSize() -1, nodes_.getSize() -1, newNode.side);
+            int index = prices_.getSellTailIndex(limitSellPrice);
+            ids_.addNodeToStore(newNode.id, index);
 
         }
         else{
             int prev = prices_.getSellTailIndex(limitSellPrice);
-            nodes_.addNode(OrderType::LIMIT, Side::SELL, qtyInOrder, limitSellPrice, prev, -1);
+            orderNode newNode = nodes_.addNode(OrderType::LIMIT, Side::SELL, qtyInOrder, limitSellPrice, prev, -1);
             prices_.updateSellTail(limitSellPrice);
+            int index = prices_.getSellTailIndex(limitSellPrice);
+            ids_.addNodeToStore(newNode.id, index);
 
         }
     }
@@ -222,7 +236,7 @@ This function will
 
     for (auto& node : nodes_.store){
         std::cout << "node id: " << node.id << "\n" << " node price: " << node.price << "\n" << " node qty: " << node.qty << "\n" << " node prevIndex: " << node.prevIndex <<
-        "\n" << " node nextIndex: " << node.nextIndex << "\n" << " node side: " << node.side << "\n" << "node type: "<< node.type << "\n"; 
+        "\n" << " node nextIndex: " << node.nextIndex << "\n" << " node side: " << node.side << "\n" << "node type: "<< node.type << "\n" << "node active?" << node.active << "\n"; 
     }
 
     if (prices_.buyPriceLevelStorage.empty()){
@@ -238,5 +252,9 @@ This function will
     }
     for (auto& orderNode : prices_.sellPriceLevelStorage){
         std::cout << " Sell Price: " << orderNode.first << "\n" << " Head: " <<  orderNode.second[0] << "\n" << " Tail: " << orderNode.second[1] << "\n";    
+    }
+
+    for (auto& id : ids_.idStore){
+        std::cout << " ids: " << id.first << "\n" << "index" << id.second << "\n";
     }
 }
