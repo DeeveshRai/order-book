@@ -5,8 +5,8 @@
 #include <iostream>
 
 using namespace std;
-
-void Matching::checkOrder(Order order){
+// CURRENT STATE - REFACTORING TO HAVE LIMIT AND MARKET ORDERS SEPERATE
+void Matching::checkLimitOrder(LimitOrder order){
     if ((order.side == Side::BUY) && prices_.isBuyStoreEmpty() && prices_.isSellStoreEmpty() && (order.type == OrderType::LIMIT)){  
         orderNode newNode = nodes_.addNode(order.type, order.side, order.qty, order.price, -1, -1);
         ids_.addNodeToStore(newNode.id, nodes_.getSize()-1);
@@ -24,24 +24,42 @@ void Matching::checkOrder(Order order){
 
     else {
 
-        switch (order.type) {
-            case LIMIT:
-                switch(order.side){
-                    case BUY: Matching::limitBuy(order.price, order.qty); break;
-                    case SELL: Matching::limitSell(order.price, order.qty); break;
-                }
-                break;
+        // switch (order.type) {
+        //     case LIMIT:
+        //         switch(order.side){
+        //             case BUY: Matching::limitBuy(order.price, order.qty); break;
+        //             case SELL: Matching::limitSell(order.price, order.qty); break;
+        //         }
+        //         break;
 
-            case MARKET:
-                switch(order.side){
-                    case BUY: Matching::marketBuy(order.qty); break;
-                    case SELL: Matching::marketSell(order.qty); break;
-                }
-                break;
+        //     case MARKET:
+        //         switch(order.side){
+        //             case BUY: Matching::marketBuy(order.qty); break;
+        //             case SELL: Matching::marketSell(order.qty); break;
+        //         }
+        //         break;
+        // }
+
+        if (order.side == Side::BUY){
+            Matching::limitBuy(order.price, order.qty);
+        }
+        
+        else if (order.side == Side::SELL){
+            Matching::limitSell(order.price, order.qty);
         }
     }
 
 };
+
+void Matching::checkMarketOrder(MarketOrder order){
+    if (order.side == Side::BUY){
+        Matching::marketBuy(order.qty);
+    }
+
+    else if (order.side == Side::SELL){
+        Matching::marketSell(order.qty);
+    }
+}
 
 void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
     //Need to handle when sell book is empty
@@ -195,20 +213,44 @@ void Matching::limitSell(int limitSellPrice, int limitSellQty){
 }
 
 void Matching::marketBuy(int marketBuyQty){
-    
     int qtyInOrder = marketBuyQty;
-    int bestBid = prices_.bestBidPrice();
-    orderNode& bestBidNode = nodes_.getNode(bestBid);
-    int bestBidQty = bestBidNode.qty;
+    int bestAsk = prices_.bestAskPrice();
+    int bestAskIndex = prices_.getSellHeadIndex(bestAsk);
+    int currentIndex = bestAskIndex;
 
-    while (qtyInOrder > 0 && bestBid){
+    while (qtyInOrder > 0 && bestAsk){
+        orderNode& bestAskNode = nodes_.getNode(currentIndex);
 
-        if (qtyInOrder <= bestBidNode.qty){
-            bestBidQty = bestBidQty - qtyInOrder;
+        if (qtyInOrder < bestAskNode.qty){
+            bestAskNode.qty = bestAskNode.qty - qtyInOrder;
             qtyInOrder = 0;
         }
+
+        else if (qtyInOrder == bestAskNode.qty){
+            bestAskNode.qty = 0;
+            qtyInOrder = 0;
+            bestAskNode.active = false;
+            prices_.qtyZeroHandle(bestAskNode);
+        }
         else{
-            qtyInOrder = qtyInOrder - bestBidQty;
+            qtyInOrder = qtyInOrder - bestAskNode.qty;
+
+            qtyInOrder = qtyInOrder - bestAskNode.qty;
+            bestAskNode.active = false;
+            bestAskNode.qty = 0;
+            
+
+            if (prices_.sellOneNodeCheck(bestAskNode.price)){
+                prices_.updateSellHeadEdgeCase(bestAskNode);
+                break;
+            }
+
+            int nextIndex = bestAskNode.nextIndex;
+            prices_.updateBuyHead(bestAskNode); 
+            nodes_.unlinkNode(bestAskNode);
+            currentIndex = nextIndex;
+            //Get node's index
+            bestAsk = bestAskNode.price;
         }
     }
 }
@@ -217,26 +259,56 @@ void Matching::marketSell(int marketSellQty){
 
     int qtyInOrder = marketSellQty;
     int bestBid = prices_.bestBidPrice();
-    orderNode& bestBidNode = nodes_.getNode(bestBid);
-    int bestBidQty = bestBidNode.qty;
+    int bestBidIndex = prices_.getBuyHeadIndex(bestBid);
+    int currentIndex = bestBidIndex;
 
     while (qtyInOrder > 0 && bestBid){
 
-        if (qtyInOrder <= bestBidNode.qty){
-            bestBidQty = bestBidQty - qtyInOrder;
+        orderNode& bestBidNode = nodes_.getNode(currentIndex);
+
+
+        if (qtyInOrder < bestBidNode.qty){
+            bestBidNode.qty = bestBidNode.qty - qtyInOrder;
             qtyInOrder = 0;
         }
+        else if (qtyInOrder == bestBidNode.qty){
+            bestBidNode.qty = 0;
+            qtyInOrder = 0;
+            bestBidNode.active = false;
+            prices_.qtyZeroHandle(bestBidNode);
+        }
         else{
-            qtyInOrder = qtyInOrder - bestBidQty;
+            qtyInOrder = qtyInOrder - bestBidNode.qty;
+
+            qtyInOrder = qtyInOrder - bestBidNode.qty;
+            bestBidNode.active = false;
+            bestBidNode.qty = 0;
+
+            if (prices_.buyOneNodeCheck(bestBidNode.price)){
+                prices_.updateBuyHeadEdgeCase(bestBidNode);
+                break;
+            }
+
+            int nextIndex = bestBidNode.nextIndex;
+            prices_.updateSellHead(bestBidNode);
+            nodes_.unlinkNode(bestBidNode);
+            currentIndex = nextIndex;
+            bestBid = bestBidNode.price;
         }
     }
 }
 
-void Matching::doMatching(OrderType type, Side side, int qty, double price){
-    Order order = {1, type, side, qty, price};
-    checkOrder(order);
+void Matching::doLimitMatching(OrderType type, Side side, int qty, double price){
+    LimitOrder limitOrder = {1, type, side, qty, price};
+    checkLimitOrder(limitOrder);
     dumpBook();
     
+}
+
+void Matching::doMarketMatching(OrderType type, Side side, int qty){
+    MarketOrder marketOrder = {1, type, side, qty};
+    checkMarketOrder(marketOrder);
+    dumpBook();
 }
 
 void Matching::dumpBook(){

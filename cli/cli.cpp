@@ -2,7 +2,6 @@
 #include <string>
 #include <vector>
 #include <sstream>
-#include "data/order.h"
 #include "storage/nodeStorage.h"
 #include "storage/priceStorage.h"
 #include "matching/matching.h"
@@ -67,11 +66,21 @@ int main() {
 
                 while (getline(stringStream, T, ' '))
                     tokens.push_back(T);
-
+                
+                //MARKET ORDERS BROKEN HERE -> Market orders only have 3 MARKET SIDE QTY
                 OrderType type = parseOrderType(tokens[0]);
                 Side side = parseSide(tokens[1]);
 
-                match.doMatching(type, side, stoi(tokens[2]), stoi(tokens[3]));
+                if (type == OrderType::LIMIT){
+                    match.doLimitMatching(type, side, stoi(tokens[2]), stoi(tokens[3]));
+                }
+
+                else if (type == OrderType::MARKET){
+                    match.doMarketMatching(type, side, stoi(tokens[2]));
+                }
+                
+
+                
 
             }
         }
