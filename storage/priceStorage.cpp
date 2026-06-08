@@ -138,3 +138,33 @@ void priceStorage::removePriceLevel(Side side, int price){
         sellPriceLevelStorage.erase(price);
     }
 }
+
+void priceStorage::qtyZeroHandle(orderNode node){
+    //Need to handle head and tail linking 
+    if (node.side == Side::BUY && !(buyOneNodeCheck(node.price))){
+        if (node.prevIndex == -1){
+            updateBuyHead(node);
+        }
+        else if (node.nextIndex == -1){
+            buyPriceLevelStorage[node.price][1] = node.prevIndex;
+        }
+    }
+
+    if (node.side == Side::SELL && !(sellOneNodeCheck(node.price))){
+        if (node.prevIndex == -1){
+            updateSellHead(node);
+        }
+        else if (node.nextIndex == -1){
+            sellPriceLevelStorage[node.price][1] = node.prevIndex;
+        }
+    }
+
+    if (node.side == Side::BUY && buyOneNodeCheck(node.price)){
+        removePriceLevel(node.side, node.price);
+    }
+
+    else if (node.side == Side::SELL && sellOneNodeCheck(node.price)){
+        removePriceLevel(node.side, node.price);
+    }
+
+}

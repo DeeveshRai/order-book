@@ -67,15 +67,22 @@ void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
 
         orderNode& bestAskNode = nodes_.getNode(currentIndex);
         
-        if (qtyInOrder <= bestAskNode.qty){
+        if (qtyInOrder < bestAskNode.qty){
             bestAskNode.qty = bestAskNode.qty - qtyInOrder;
             qtyInOrder = 0;
- 
+        
+        }
+        else if(qtyInOrder == bestAskNode.qty){
+            bestAskNode.qty = 0;
+            qtyInOrder = 0;
+            bestAskNode.active = false;
+            prices_.qtyZeroHandle(bestAskNode);
         } 
         else{
             qtyInOrder = qtyInOrder - bestAskNode.qty;
             bestAskNode.active = false;
             bestAskNode.qty = 0;
+            
 
             if (prices_.sellOneNodeCheck(bestAskNode.price)){
                 prices_.updateSellHeadEdgeCase(bestAskNode);
@@ -136,9 +143,16 @@ void Matching::limitSell(int limitSellPrice, int limitSellQty){
 
         orderNode& bestBidNode = nodes_.getNode(currentIndex);
 
-        if (qtyInOrder <= bestBidNode.qty){
+        if (qtyInOrder < bestBidNode.qty){
             bestBidNode.qty = bestBidNode.qty - qtyInOrder;
             qtyInOrder = 0;
+        }
+        else if(qtyInOrder == bestBidNode.qty){
+            bestBidNode.qty = 0;
+            qtyInOrder = 0;
+            bestBidNode.active = false;
+            //need handling for removing order from price store if its a head/tail OR removing price if its the only node
+            prices_.qtyZeroHandle(bestBidNode);
         }
         else{
             qtyInOrder = qtyInOrder - bestBidNode.qty; 
@@ -158,7 +172,7 @@ void Matching::limitSell(int limitSellPrice, int limitSellQty){
             currentIndex = nextIndex;
             //Get node's index
             bestBid = bestBidNode.price;
-        }
+        }  
     }
     if (qtyInOrder > 0){
 
