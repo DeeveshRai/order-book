@@ -29,6 +29,9 @@ In order to find the pointers:
         -> newNode's prevIndex = Current Tail's index
         -> newNode's nextIndex = -1 (guard) 
 */
+
+//NEED TO REFACTOR SO IT ADDS TO THE NEXT AVAILABLE SLOT?
+//IF empty add to -1 -1
 orderNode NodeStorage::addNode(OrderType type, Side side, int qty, double price, int prev, int next){
     //TODO: IMPLEMENT UUID LOGIC 
     int rand = std::rand() % 10000;

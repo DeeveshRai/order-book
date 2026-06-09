@@ -6,38 +6,38 @@
 // TODO: Function that replaces head with next
 
 int priceStorage::bestAskPrice(){
-    int bestAsk = sellPriceLevelStorage.begin()->first;
-
-    return bestAsk;
+    if (sellPriceLevelStorage.empty()) return -1;
+    return sellPriceLevelStorage.begin()->first;
 }
 
 int priceStorage::bestBidPrice(){
-    int bestBid = buyPriceLevelStorage.begin()->first;
-
-    return bestBid;
+    if (buyPriceLevelStorage.empty()) return -1;
+    // best bid = highest buy price
+    return buyPriceLevelStorage.rbegin()->first;
 }
 
 int priceStorage::getBuyHeadIndex(int price){
-    int index = buyPriceLevelStorage[price][0];
-    return index;
-    
+    auto it = buyPriceLevelStorage.find(price);
+    if (it == buyPriceLevelStorage.end()) return -1;
+    return it->second[0];
 }
 
-
 int priceStorage::getSellHeadIndex(int price){
-    int index = sellPriceLevelStorage[price][0];
-    return index;
-    
+    auto it = sellPriceLevelStorage.find(price);
+    if (it == sellPriceLevelStorage.end()) return -1;
+    return it->second[0];
 }
 
 int priceStorage::getBuyTailIndex(int price){
-    int index = buyPriceLevelStorage[price][1];
-    return index;
+    auto it = buyPriceLevelStorage.find(price);
+    if (it == buyPriceLevelStorage.end()) return -1;
+    return it->second[1];
 }
 
 int priceStorage::getSellTailIndex(int price){
-    int index = sellPriceLevelStorage[price][1];
-    return index;
+    auto it = sellPriceLevelStorage.find(price);
+    if (it == sellPriceLevelStorage.end()) return -1;
+    return it->second[1];
 }
 
 void priceStorage::updateBuyTail(int price){
@@ -117,8 +117,16 @@ bool priceStorage::isBuyStoreEmpty(){
     return buyPriceLevelStorage.empty();
 }
 
+bool priceStorage::isBuyPriceLevelEmpty(int price){
+    return buyPriceLevelStorage.find(price) == buyPriceLevelStorage.end();
+}
+
 bool priceStorage::isSellStoreEmpty(){
     return sellPriceLevelStorage.empty();
+}
+
+bool priceStorage::isSellPriceLevelEmpty(int price){
+    return sellPriceLevelStorage.find(price) == sellPriceLevelStorage.end();
 }
 
 bool priceStorage::sellOneNodeCheck(int price){

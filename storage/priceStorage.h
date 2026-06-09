@@ -30,7 +30,9 @@ class priceStorage{
         void replaceHead(int idx, int price, Side side);
         void replaceTail(int idx, int price, Side side);
         bool isBuyStoreEmpty();
+        bool isBuyPriceLevelEmpty(int price);
         bool isSellStoreEmpty();
+        bool isSellPriceLevelEmpty(int price);
         bool sellOneNodeCheck(int price);
         bool buyOneNodeCheck(int price);
         void removePriceLevel(Side side, int price);

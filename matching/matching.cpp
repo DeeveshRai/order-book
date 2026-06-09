@@ -5,9 +5,14 @@
 #include <iostream>
 
 using namespace std;
-// CURRENT STATE - REFACTORING TO HAVE LIMIT AND MARKET ORDERS SEPERATE
+// CURRENT STATE - NEED SUPPORT FOR DIFFERENT PRICE LEVELS
+// TRY: LIMIT BUY 100 10, LIMIT BUY 100 11 -> WILL FAIL
+
+//ASSUMPTION -> Currently, different price levels are all added to 0th index of the node storage store
 void Matching::checkLimitOrder(LimitOrder order){
-    if ((order.side == Side::BUY) && prices_.isBuyStoreEmpty() && prices_.isSellStoreEmpty() && (order.type == OrderType::LIMIT)){  
+    if ((order.side == Side::BUY) && prices_.isBuyPriceLevelEmpty(order.price) && prices_.isSellPriceLevelEmpty(order.price) && (order.type == OrderType::LIMIT)){  
+        //CURRENT -> Reenters this even when price level contains something?
+        std::cout << "Buy Price Level: " << prices_.isBuyPriceLevelEmpty(order.price);
         orderNode newNode = nodes_.addNode(order.type, order.side, order.qty, order.price, -1, -1);
         ids_.addNodeToStore(newNode.id, nodes_.getSize()-1);
         //Needs to be index in node store
@@ -15,7 +20,7 @@ void Matching::checkLimitOrder(LimitOrder order){
         return;
     }
 
-    else if ((order.side == Side::SELL) && prices_.isSellStoreEmpty() && prices_.isBuyStoreEmpty() && (order.type == OrderType::LIMIT)){
+    else if ((order.side == Side::SELL) && prices_.isBuyPriceLevelEmpty(order.price) && prices_.isSellPriceLevelEmpty(order.price) && (order.type == OrderType::LIMIT)){
         orderNode newNode = nodes_.addNode(order.type, order.side, order.qty, order.price, -1, -1);
         ids_.addNodeToStore(newNode.id, nodes_.getSize()-1);
         prices_.addToEmptyBook(order.price, nodes_.getSize() -1, nodes_.getSize() -1, order.side);
@@ -23,22 +28,6 @@ void Matching::checkLimitOrder(LimitOrder order){
     }
 
     else {
-
-        // switch (order.type) {
-        //     case LIMIT:
-        //         switch(order.side){
-        //             case BUY: Matching::limitBuy(order.price, order.qty); break;
-        //             case SELL: Matching::limitSell(order.price, order.qty); break;
-        //         }
-        //         break;
-
-        //     case MARKET:
-        //         switch(order.side){
-        //             case BUY: Matching::marketBuy(order.qty); break;
-        //             case SELL: Matching::marketSell(order.qty); break;
-        //         }
-        //         break;
-        // }
 
         if (order.side == Side::BUY){
             Matching::limitBuy(order.price, order.qty);
@@ -63,7 +52,10 @@ void Matching::checkMarketOrder(MarketOrder order){
 
 void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
     //Need to handle when sell book is empty
-    if (prices_.isSellStoreEmpty()){
+
+    
+    if (prices_.isSellPriceLevelEmpty(limitBuyPrice)){
+        
         //Just add to price store and add node
         int currBuyTailIndex = prices_.getBuyTailIndex(limitBuyPrice);
         orderNode newNode = nodes_.addNode(OrderType::LIMIT, Side::BUY, limitBuyQty, limitBuyPrice, currBuyTailIndex, -1);
@@ -120,7 +112,7 @@ void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
     //Now handle partial
     if (qtyInOrder > 0){
 
-        if (prices_.buyPriceLevelStorage.empty()){
+        if (prices_.isBuyPriceLevelEmpty(limitBuyPrice)){
             orderNode newNode = nodes_.addNode(OrderType::LIMIT, Side::BUY, qtyInOrder, limitBuyPrice, -1, -1);
             prices_.addToEmptyBook(limitBuyPrice, nodes_.getSize() -1, nodes_.getSize() -1, Side::BUY);
             int index = prices_.getBuyTailIndex(limitBuyPrice);
@@ -142,7 +134,7 @@ void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
 //CURRENT STATE: Inconsistent linking issues between nodes in price storage and node storage
 void Matching::limitSell(int limitSellPrice, int limitSellQty){
     
-    if (prices_.isBuyStoreEmpty()){
+    if (prices_.isBuyPriceLevelEmpty(limitSellPrice)){
         int currSellTailIndex = prices_.getSellTailIndex(limitSellPrice);
         orderNode newNode = nodes_.addNode(OrderType::LIMIT, Side::SELL, limitSellQty, limitSellPrice, currSellTailIndex, -1);
         //Need to solve problem with price books and adding of indexes
@@ -194,7 +186,7 @@ void Matching::limitSell(int limitSellPrice, int limitSellQty){
     }
     if (qtyInOrder > 0){
 
-        if (prices_.sellPriceLevelStorage.empty()){
+        if (prices_.isSellPriceLevelEmpty(limitSellPrice)){
             orderNode newNode = nodes_.addNode(OrderType::LIMIT, Side::SELL, qtyInOrder, limitSellPrice, -1, -1);
             prices_.addToEmptyBook(newNode.price, nodes_.getSize() -1, nodes_.getSize() -1, newNode.side);
             int index = prices_.getSellTailIndex(limitSellPrice);
@@ -325,21 +317,28 @@ This function will
         "\n" << " node nextIndex: " << node.nextIndex << "\n" << " node side: " << node.side << "\n" << "node type: "<< node.type << "\n" << "node active?" << node.active << "\n"; 
     }
 
+    std::cout<< "Hi";
+
     if (prices_.buyPriceLevelStorage.empty()){
         std::cout << "buy empty" << "\n";
     }
 
+    // std::cout<< "Hi2";
     for (auto& orderNode : prices_.buyPriceLevelStorage){
         std::cout << " Buy Price: " << orderNode.first << "\n" << " Head: " <<  orderNode.second[0] << "\n" << " Tail: " << orderNode.second[1] << "\n";   
     }
 
+    std::cout<< "Hi3";
     if (prices_.sellPriceLevelStorage.empty()){
         std::cout << "sell empty" << "\n";
     }
+
+    std::cout<< "Hi4";
     for (auto& orderNode : prices_.sellPriceLevelStorage){
         std::cout << " Sell Price: " << orderNode.first << "\n" << " Head: " <<  orderNode.second[0] << "\n" << " Tail: " << orderNode.second[1] << "\n";    
     }
 
+    std::cout<< "Hi5";
     for (auto& id : ids_.idStore){
         std::cout << " ids: " << id.first << "\n" << "index" << id.second << "\n";
     }
