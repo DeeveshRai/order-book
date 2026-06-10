@@ -37,6 +37,8 @@ class priceStorage{
         bool buyOneNodeCheck(int price);
         void removePriceLevel(Side side, int price);
         void qtyZeroHandle(orderNode node);
+        bool hasMatchableAsks(int price);
+        bool hasMatchableBids(int price);
 
     private:
         NodeStorage& nodes_;

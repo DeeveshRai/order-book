@@ -176,3 +176,20 @@ void priceStorage::qtyZeroHandle(orderNode node){
     }
 
 }
+
+bool priceStorage::hasMatchableAsks(int price){
+    //for sell check
+    //Must check if asks exist in current price level and below
+
+    if (isSellStoreEmpty()) return false;
+
+    return bestAskPrice() <= price;
+    
+}
+
+bool priceStorage::hasMatchableBids(int price)
+{
+    if (isBuyStoreEmpty()) return false;
+
+    return bestBidPrice() >= price;
+}

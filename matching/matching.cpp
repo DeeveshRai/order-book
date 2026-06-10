@@ -4,14 +4,14 @@
 #include "storage/idMap.h"
 #include <iostream>
 
-using namespace std;
-// CURRENT STATE - NEED SUPPORT FOR DIFFERENT PRICE LEVELS
-// TRY: LIMIT BUY 100 10, LIMIT BUY 100 11 -> WILL FAIL
+// TODO:
+// Replace all node/price-level traversal logic
+// with getNextMatchableBid()/Ask() helper after V1.
 
-//ASSUMPTION -> Currently, different price levels are all added to 0th index of the node storage store
+using namespace std;
+
 void Matching::checkLimitOrder(LimitOrder order){
-    if ((order.side == Side::BUY) && prices_.isBuyPriceLevelEmpty(order.price) && prices_.isSellPriceLevelEmpty(order.price) && (order.type == OrderType::LIMIT)){  
-        //CURRENT -> Reenters this even when price level contains something?
+    if ((order.side == Side::BUY) && prices_.isBuyPriceLevelEmpty(order.price) && !prices_.hasMatchableAsks(order.price) && (order.type == OrderType::LIMIT)){  
         std::cout << "Buy Price Level: " << prices_.isBuyPriceLevelEmpty(order.price);
         orderNode newNode = nodes_.addNode(order.type, order.side, order.qty, order.price, -1, -1);
         ids_.addNodeToStore(newNode.id, nodes_.getSize()-1);
@@ -20,7 +20,9 @@ void Matching::checkLimitOrder(LimitOrder order){
         return;
     }
 
-    else if ((order.side == Side::SELL) && prices_.isBuyPriceLevelEmpty(order.price) && prices_.isSellPriceLevelEmpty(order.price) && (order.type == OrderType::LIMIT)){
+    //This line is causing problems!
+    //We are only checking the specific price level itself, but it should be the price level AND everything above it
+    else if ((order.side == Side::SELL) && !prices_.hasMatchableBids(order.price) && prices_.isSellPriceLevelEmpty(order.price) && (order.type == OrderType::LIMIT)){
         orderNode newNode = nodes_.addNode(order.type, order.side, order.qty, order.price, -1, -1);
         ids_.addNodeToStore(newNode.id, nodes_.getSize()-1);
         prices_.addToEmptyBook(order.price, nodes_.getSize() -1, nodes_.getSize() -1, order.side);
@@ -54,7 +56,7 @@ void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
     //Need to handle when sell book is empty
 
     
-    if (prices_.isSellPriceLevelEmpty(limitBuyPrice)){
+    if (prices_.isSellStoreEmpty()){
         
         //Just add to price store and add node
         int currBuyTailIndex = prices_.getBuyTailIndex(limitBuyPrice);
@@ -96,16 +98,26 @@ void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
 
             if (prices_.sellOneNodeCheck(bestAskNode.price)){
                 prices_.updateSellHeadEdgeCase(bestAskNode);
-                break;
+
+                if (prices_.hasMatchableAsks(limitBuyPrice)){
+                    bestAsk = prices_.bestAskPrice();
+                    bestAskIndex = prices_.getSellHeadIndex(bestAsk);
+                    currentIndex = bestAskIndex;
+                    continue;
+                }
+                
+                else break;
+            } 
+            
+            else{
+           
+                int nextIndex = bestAskNode.nextIndex;
+                prices_.updateSellHead(bestAskNode); 
+                nodes_.unlinkNode(bestAskNode);
+                currentIndex = nextIndex;
+                //Get node's index
+                bestAsk = bestAskNode.price;
             }
-
-            int nextIndex = bestAskNode.nextIndex;
-
-            prices_.updateSellHead(bestAskNode); 
-            nodes_.unlinkNode(bestAskNode);
-            currentIndex = nextIndex;
-            //Get node's index
-            bestAsk = bestAskNode.price;
         }
     }
 
@@ -131,10 +143,10 @@ void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
 
 }
 
-//CURRENT STATE: Inconsistent linking issues between nodes in price storage and node storage
 void Matching::limitSell(int limitSellPrice, int limitSellQty){
-    
-    if (prices_.isBuyPriceLevelEmpty(limitSellPrice)){
+    //This logic may be incorrect, even when buys exist that are valid, it adds it to the sell store? (Different PLs)
+    if (prices_.isBuyStoreEmpty()){
+        //DOIESNT ENTER HERE -> FINE
         int currSellTailIndex = prices_.getSellTailIndex(limitSellPrice);
         orderNode newNode = nodes_.addNode(OrderType::LIMIT, Side::SELL, limitSellQty, limitSellPrice, currSellTailIndex, -1);
         //Need to solve problem with price books and adding of indexes
@@ -149,8 +161,9 @@ void Matching::limitSell(int limitSellPrice, int limitSellQty){
     int bestBidIndex = prices_.getBuyHeadIndex(bestBid);
     int currentIndex = bestBidIndex;
 
-    while (currentIndex != -1 && qtyInOrder > 0 && bestBid && bestBid <= limitSellPrice){
-
+    bool check = currentIndex != -1 && qtyInOrder > 0 && bestBid && bestBid >= limitSellPrice;
+    std::cout << "\n" << " This the check fr fr: " << check << "\n";
+    while (currentIndex != -1 && qtyInOrder > 0 && bestBid && bestBid >= limitSellPrice){
         orderNode& bestBidNode = nodes_.getNode(currentIndex);
 
         if (qtyInOrder < bestBidNode.qty){
@@ -169,19 +182,32 @@ void Matching::limitSell(int limitSellPrice, int limitSellQty){
             bestBidNode.active = false;
             bestBidNode.qty = 0;
 
+            //IF ONLY ONE NODE IN PL
             if (prices_.buyOneNodeCheck(bestBidNode.price)){
                 prices_.updateBuyHeadEdgeCase(bestBidNode);
-                break;
+
+                if (prices_.hasMatchableBids(limitSellPrice)){
+                    /*Need to move to next price level and begin matching from there
+                    */
+
+                    bestBid = prices_.bestBidPrice();
+                    bestBidIndex = prices_.getBuyHeadIndex(bestBid);
+                    currentIndex = bestBidIndex;
+                    continue;
+                }
+
+                else break;
             }
 
+            else{
+                int nextIndex = bestBidNode.nextIndex;
 
-            int nextIndex = bestBidNode.nextIndex;
-
-            prices_.updateBuyHead(bestBidNode); 
-            nodes_.unlinkNode(bestBidNode);
-            currentIndex = nextIndex;
-            //Get node's index
-            bestBid = bestBidNode.price;
+                prices_.updateBuyHead(bestBidNode); 
+                nodes_.unlinkNode(bestBidNode);
+                currentIndex = nextIndex;
+                //Get node's index
+                bestBid = bestBidNode.price;
+            }
         }  
     }
     if (qtyInOrder > 0){
@@ -210,6 +236,7 @@ void Matching::marketBuy(int marketBuyQty){
     int bestAskIndex = prices_.getSellHeadIndex(bestAsk);
     int currentIndex = bestAskIndex;
 
+    //CURRENT PROBLEM -> Exits loop after 1 loop
     while (qtyInOrder > 0 && bestAsk){
         orderNode& bestAskNode = nodes_.getNode(currentIndex);
 
@@ -226,17 +253,24 @@ void Matching::marketBuy(int marketBuyQty){
         }
         else{
             qtyInOrder = qtyInOrder - bestAskNode.qty;
-
-            qtyInOrder = qtyInOrder - bestAskNode.qty;
             bestAskNode.active = false;
             bestAskNode.qty = 0;
             
 
             if (prices_.sellOneNodeCheck(bestAskNode.price)){
                 prices_.updateSellHeadEdgeCase(bestAskNode);
-                break;
+                
+                if (!prices_.isSellStoreEmpty()){
+                    bestAsk = prices_.bestAskPrice();
+                    bestAskIndex = prices_.getSellHeadIndex(bestAsk);
+                    currentIndex = bestAskIndex;
+                    continue;
+                }
+                
+                else break;
             }
-
+            
+            std::cout << "hi";
             int nextIndex = bestAskNode.nextIndex;
             prices_.updateBuyHead(bestAskNode); 
             nodes_.unlinkNode(bestAskNode);
@@ -247,6 +281,7 @@ void Matching::marketBuy(int marketBuyQty){
     }
 }
 
+//BUG
 void Matching::marketSell(int marketSellQty){
 
     int qtyInOrder = marketSellQty;
@@ -271,14 +306,23 @@ void Matching::marketSell(int marketSellQty){
         }
         else{
             qtyInOrder = qtyInOrder - bestBidNode.qty;
-
-            qtyInOrder = qtyInOrder - bestBidNode.qty;
             bestBidNode.active = false;
             bestBidNode.qty = 0;
 
             if (prices_.buyOneNodeCheck(bestBidNode.price)){
                 prices_.updateBuyHeadEdgeCase(bestBidNode);
-                break;
+                
+                if (!prices_.isBuyStoreEmpty()){
+                    /*Need to move to next price level and begin matching from there
+                    */
+
+                    bestBid = prices_.bestBidPrice();
+                    bestBidIndex = prices_.getBuyHeadIndex(bestBid);
+                    currentIndex = bestBidIndex;
+                    continue;
+                }
+
+                else break;
             }
 
             int nextIndex = bestBidNode.nextIndex;
@@ -317,28 +361,22 @@ This function will
         "\n" << " node nextIndex: " << node.nextIndex << "\n" << " node side: " << node.side << "\n" << "node type: "<< node.type << "\n" << "node active?" << node.active << "\n"; 
     }
 
-    std::cout<< "Hi";
-
     if (prices_.buyPriceLevelStorage.empty()){
         std::cout << "buy empty" << "\n";
     }
 
-    // std::cout<< "Hi2";
     for (auto& orderNode : prices_.buyPriceLevelStorage){
         std::cout << " Buy Price: " << orderNode.first << "\n" << " Head: " <<  orderNode.second[0] << "\n" << " Tail: " << orderNode.second[1] << "\n";   
     }
 
-    std::cout<< "Hi3";
     if (prices_.sellPriceLevelStorage.empty()){
         std::cout << "sell empty" << "\n";
     }
 
-    std::cout<< "Hi4";
     for (auto& orderNode : prices_.sellPriceLevelStorage){
         std::cout << " Sell Price: " << orderNode.first << "\n" << " Head: " <<  orderNode.second[0] << "\n" << " Tail: " << orderNode.second[1] << "\n";    
     }
 
-    std::cout<< "Hi5";
     for (auto& id : ids_.idStore){
         std::cout << " ids: " << id.first << "\n" << "index" << id.second << "\n";
     }
