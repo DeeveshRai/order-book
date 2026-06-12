@@ -89,14 +89,17 @@ void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
             qtyInOrder = 0;
             bestAskNode.active = false;
             prices_.qtyZeroHandle(bestAskNode);
+            ids_.removeOrderById(bestAskNode.id);
         } 
         else{
             qtyInOrder = qtyInOrder - bestAskNode.qty;
             bestAskNode.active = false;
             bestAskNode.qty = 0;
+            ids_.removeOrderById(bestAskNode.id);
             
 
             if (prices_.sellOneNodeCheck(bestAskNode.price)){
+                
                 prices_.updateSellHeadEdgeCase(bestAskNode);
 
                 if (prices_.hasMatchableAsks(limitBuyPrice)){
@@ -119,6 +122,7 @@ void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
                 bestAsk = bestAskNode.price;
             }
         }
+        
     }
 
     //Now handle partial
@@ -174,11 +178,13 @@ void Matching::limitSell(int limitSellPrice, int limitSellQty){
             bestBidNode.active = false;
             //need handling for removing order from price store if its a head/tail OR removing price if its the only node
             prices_.qtyZeroHandle(bestBidNode);
+            ids_.removeOrderById(bestBidNode.id);
         }
         else{
             qtyInOrder = qtyInOrder - bestBidNode.qty; 
             bestBidNode.active = false;
             bestBidNode.qty = 0;
+            ids_.removeOrderById(bestBidNode.id);
 
             //IF ONLY ONE NODE IN PL
             if (prices_.buyOneNodeCheck(bestBidNode.price)){
@@ -248,11 +254,13 @@ void Matching::marketBuy(int marketBuyQty){
             qtyInOrder = 0;
             bestAskNode.active = false;
             prices_.qtyZeroHandle(bestAskNode);
+            ids_.removeOrderById(bestAskNode.id);
         }
         else{
             qtyInOrder = qtyInOrder - bestAskNode.qty;
             bestAskNode.active = false;
             bestAskNode.qty = 0;
+            ids_.removeOrderById(bestAskNode.id);
             
 
             if (prices_.sellOneNodeCheck(bestAskNode.price)){
@@ -304,11 +312,13 @@ void Matching::marketSell(int marketSellQty){
             qtyInOrder = 0;
             bestBidNode.active = false;
             prices_.qtyZeroHandle(bestBidNode);
+            ids_.removeOrderById(bestBidNode.id);
         }
         else{
             qtyInOrder = qtyInOrder - bestBidNode.qty;
             bestBidNode.active = false;
             bestBidNode.qty = 0;
+            ids_.removeOrderById(bestBidNode.id);
 
             if (prices_.buyOneNodeCheck(bestBidNode.price)){
                 prices_.updateBuyHeadEdgeCase(bestBidNode);
