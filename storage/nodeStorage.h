@@ -21,6 +21,4 @@ class NodeStorage {
         
 };
 
-// TODO: Need to add functions to handle removal of nodes with < 0 qty
-
 #endif

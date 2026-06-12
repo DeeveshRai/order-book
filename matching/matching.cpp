@@ -12,16 +12,12 @@ using namespace std;
 
 void Matching::checkLimitOrder(LimitOrder order){
     if ((order.side == Side::BUY) && prices_.isBuyPriceLevelEmpty(order.price) && !prices_.hasMatchableAsks(order.price) && (order.type == OrderType::LIMIT)){  
-        std::cout << "Buy Price Level: " << prices_.isBuyPriceLevelEmpty(order.price);
         orderNode newNode = nodes_.addNode(order.type, order.side, order.qty, order.price, -1, -1);
         ids_.addNodeToStore(newNode.id, nodes_.getSize()-1);
-        //Needs to be index in node store
         prices_.addToEmptyBook(order.price, nodes_.getSize() -1, nodes_.getSize() -1, order.side);
         return;
     }
 
-    //This line is causing problems!
-    //We are only checking the specific price level itself, but it should be the price level AND everything above it
     else if ((order.side == Side::SELL) && !prices_.hasMatchableBids(order.price) && prices_.isSellPriceLevelEmpty(order.price) && (order.type == OrderType::LIMIT)){
         orderNode newNode = nodes_.addNode(order.type, order.side, order.qty, order.price, -1, -1);
         ids_.addNodeToStore(newNode.id, nodes_.getSize()-1);
@@ -53,15 +49,11 @@ void Matching::checkMarketOrder(MarketOrder order){
 }
 
 void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
-    //Need to handle when sell book is empty
 
-    
     if (prices_.isSellStoreEmpty()){
         
-        //Just add to price store and add node
         int currBuyTailIndex = prices_.getBuyTailIndex(limitBuyPrice);
         orderNode newNode = nodes_.addNode(OrderType::LIMIT, Side::BUY, limitBuyQty, limitBuyPrice, currBuyTailIndex, -1);
-        //Need to solve problem with price books and adding of indexes
         prices_.updateBuyTail(limitBuyPrice);
         int newBuyTailIndex = prices_.getBuyTailIndex(limitBuyPrice);
         ids_.addNodeToStore(newNode.id, newBuyTailIndex);
@@ -74,7 +66,6 @@ void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
     int bestAskIndex = prices_.getSellHeadIndex(bestAsk);
     int currentIndex = bestAskIndex;
 
-    //Potential empty-book issue - FIXED
     while (currentIndex != -1 && qtyInOrder > 0 && bestAsk && bestAsk <= limitBuyPrice){
 
         orderNode& bestAskNode = nodes_.getNode(currentIndex);
@@ -118,14 +109,12 @@ void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
                 prices_.updateSellHead(bestAskNode); 
                 nodes_.unlinkNode(bestAskNode);
                 currentIndex = nextIndex;
-                //Get node's index
                 bestAsk = bestAskNode.price;
             }
         }
         
     }
 
-    //Now handle partial
     if (qtyInOrder > 0){
 
         if (prices_.isBuyPriceLevelEmpty(limitBuyPrice)){
@@ -148,12 +137,9 @@ void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
 }
 
 void Matching::limitSell(int limitSellPrice, int limitSellQty){
-    //This logic may be incorrect, even when buys exist that are valid, it adds it to the sell store? (Different PLs)
     if (prices_.isBuyStoreEmpty()){
-        //DOIESNT ENTER HERE -> FINE
         int currSellTailIndex = prices_.getSellTailIndex(limitSellPrice);
         orderNode newNode = nodes_.addNode(OrderType::LIMIT, Side::SELL, limitSellQty, limitSellPrice, currSellTailIndex, -1);
-        //Need to solve problem with price books and adding of indexes
         prices_.updateSellTail(limitSellPrice);
         int index = prices_.getSellTailIndex(limitSellPrice);
         ids_.addNodeToStore(newNode.id, index);
@@ -176,7 +162,6 @@ void Matching::limitSell(int limitSellPrice, int limitSellQty){
             bestBidNode.qty = 0;
             qtyInOrder = 0;
             bestBidNode.active = false;
-            //need handling for removing order from price store if its a head/tail OR removing price if its the only node
             prices_.qtyZeroHandle(bestBidNode);
             ids_.removeOrderById(bestBidNode.id);
         }
@@ -191,8 +176,6 @@ void Matching::limitSell(int limitSellPrice, int limitSellQty){
                 prices_.updateBuyHeadEdgeCase(bestBidNode);
 
                 if (prices_.hasMatchableBids(limitSellPrice)){
-                    /*Need to move to next price level and begin matching from there
-                    */
 
                     bestBid = prices_.bestBidPrice();
                     bestBidIndex = prices_.getBuyHeadIndex(bestBid);
@@ -240,7 +223,6 @@ void Matching::marketBuy(int marketBuyQty){
     int bestAskIndex = prices_.getSellHeadIndex(bestAsk);
     int currentIndex = bestAskIndex;
 
-    //CURRENT PROBLEM -> Exits loop after 1 loop
     while (qtyInOrder > 0 && bestAsk){
         orderNode& bestAskNode = nodes_.getNode(currentIndex);
 
@@ -282,15 +264,12 @@ void Matching::marketBuy(int marketBuyQty){
                 prices_.updateSellHead(bestAskNode); 
                 nodes_.unlinkNode(bestAskNode);
                 currentIndex = nextIndex;
-                
-                //Get node's index
                 bestAsk = bestAskNode.price; //Redundant
             }
         }
     }
 }
 
-//BUG
 void Matching::marketSell(int marketSellQty){
 
     int qtyInOrder = marketSellQty;
@@ -367,8 +346,6 @@ This function will
 1) Print all nodes within nodeStorage
 2) Print all nodes in order in each of the price storages buy index [head_index] -> ... -> [tail_index]
 */
-
-//NodeStorage
 
     for (auto& node : nodes_.store){
         std::cout << "node id: " << node.id << "\n" << " node price: " << node.price << "\n" << " node qty: " << node.qty << "\n" << " node prevIndex: " << node.prevIndex <<

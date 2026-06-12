@@ -3,8 +3,6 @@
 #include "priceStorage.h"
 #include <iostream>
 
-// TODO: Function that replaces head with next
-
 int priceStorage::bestAskPrice(){
     if (sellPriceLevelStorage.empty()) return -1;
     return sellPriceLevelStorage.begin()->first;
@@ -12,7 +10,6 @@ int priceStorage::bestAskPrice(){
 
 int priceStorage::bestBidPrice(){
     if (buyPriceLevelStorage.empty()) return -1;
-    // best bid = highest buy price
     return buyPriceLevelStorage.rbegin()->first;
 }
 
@@ -56,12 +53,10 @@ void priceStorage::updateSellTail(int price){
 }
 
 void priceStorage::updateSellHead(orderNode node){
-    //Move head to node.nextIndex
     sellPriceLevelStorage[node.price][0] = node.nextIndex;
 }
 
 void priceStorage::updateBuyHead(orderNode node){
-    //Move head to node.nextIndex
     buyPriceLevelStorage[node.price][0] = node.nextIndex;
 }
 
@@ -73,17 +68,8 @@ void priceStorage::updateBuyHeadEdgeCase(orderNode node){
     buyPriceLevelStorage.erase(node.price);
 }
 
-/*
-Refactor:
-1) If book empty:
-    -> Add both head and tail
-2) If book not empty:
-    -> Only change tail
-*/
-
 void priceStorage::addToEmptyBook(int price, int prevIndex, int nextIndex, Side side){
     if (side == Side::BUY){
-        //std::map<int, std::vector<int>> buyPriceLevelStorage;
         buyPriceLevelStorage.insert({price, {prevIndex, nextIndex}});
         
     }
@@ -148,7 +134,6 @@ void priceStorage::removePriceLevel(Side side, int price){
 }
 
 void priceStorage::qtyZeroHandle(orderNode node){
-    //Need to handle head and tail linking 
     if (node.side == Side::BUY && !(buyOneNodeCheck(node.price))){
         if (node.prevIndex == -1){
             updateBuyHead(node);
@@ -178,8 +163,6 @@ void priceStorage::qtyZeroHandle(orderNode node){
 }
 
 bool priceStorage::hasMatchableAsks(int price){
-    //for sell check
-    //Must check if asks exist in current price level and below
 
     if (isSellStoreEmpty()) return false;
 

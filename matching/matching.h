@@ -16,6 +16,7 @@ class Matching {
         // Methods
         void doLimitMatching(OrderType type, Side side, int qty, double price);
         void doMarketMatching(OrderType type, Side side, int qty);
+        void checkLimitOrder(LimitOrder order);
         void dumpBook();
 
     private:
@@ -25,7 +26,7 @@ class Matching {
         idMap& ids_;
 
         // Methods
-        void checkLimitOrder(LimitOrder order);
+        
         void checkMarketOrder(MarketOrder order);
         void limitBuy(int price, int qty);
         void limitSell(int price, int qty);
