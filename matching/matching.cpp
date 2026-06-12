@@ -161,8 +161,6 @@ void Matching::limitSell(int limitSellPrice, int limitSellQty){
     int bestBidIndex = prices_.getBuyHeadIndex(bestBid);
     int currentIndex = bestBidIndex;
 
-    bool check = currentIndex != -1 && qtyInOrder > 0 && bestBid && bestBid >= limitSellPrice;
-    std::cout << "\n" << " This the check fr fr: " << check << "\n";
     while (currentIndex != -1 && qtyInOrder > 0 && bestBid && bestBid >= limitSellPrice){
         orderNode& bestBidNode = nodes_.getNode(currentIndex);
 
@@ -270,13 +268,16 @@ void Matching::marketBuy(int marketBuyQty){
                 else break;
             }
             
-            std::cout << "hi";
-            int nextIndex = bestAskNode.nextIndex;
-            prices_.updateBuyHead(bestAskNode); 
-            nodes_.unlinkNode(bestAskNode);
-            currentIndex = nextIndex;
-            //Get node's index
-            bestAsk = bestAskNode.price;
+            else{
+                int nextIndex = bestAskNode.nextIndex;
+                
+                prices_.updateSellHead(bestAskNode); 
+                nodes_.unlinkNode(bestAskNode);
+                currentIndex = nextIndex;
+                
+                //Get node's index
+                bestAsk = bestAskNode.price; //Redundant
+            }
         }
     }
 }
@@ -325,11 +326,14 @@ void Matching::marketSell(int marketSellQty){
                 else break;
             }
 
-            int nextIndex = bestBidNode.nextIndex;
-            prices_.updateSellHead(bestBidNode);
-            nodes_.unlinkNode(bestBidNode);
-            currentIndex = nextIndex;
-            bestBid = bestBidNode.price;
+            else{
+
+                int nextIndex = bestBidNode.nextIndex;
+                prices_.updateBuyHead(bestBidNode);
+                nodes_.unlinkNode(bestBidNode);
+                currentIndex = nextIndex;
+                bestBid = bestBidNode.price;
+            }
         }
     }
 }

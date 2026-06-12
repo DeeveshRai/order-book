@@ -57,12 +57,12 @@ void priceStorage::updateSellTail(int price){
 
 void priceStorage::updateSellHead(orderNode node){
     //Move head to node.nextIndex
-    sellPriceLevelStorage[node.price][0] = node.nextIndex; //Head index, Possibly fails here 
+    sellPriceLevelStorage[node.price][0] = node.nextIndex;
 }
 
 void priceStorage::updateBuyHead(orderNode node){
     //Move head to node.nextIndex
-    buyPriceLevelStorage[node.price][0] = node.nextIndex; //Head index, Possibly fails here 
+    buyPriceLevelStorage[node.price][0] = node.nextIndex;
 }
 
 void priceStorage::updateSellHeadEdgeCase(orderNode node){
