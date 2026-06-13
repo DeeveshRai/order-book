@@ -155,8 +155,8 @@ void testSellFIFOPriority(){
     orderNode& node2 = nodes.getNode(node.nextIndex);
     
     assert(node2.qty == 80);
-    assert(node.price == 10);
-    assert(node.active);
+    assert(node2.price == 10);
+    assert(node2.active);
 
     std::cout << "[PASS] SellFIFOPriority\n";
 
@@ -187,8 +187,8 @@ void testBuyFIFOPriority(){
     orderNode& node2 = nodes.getNode(node.nextIndex);
     
     assert(node2.qty == 80);
-    assert(node.price == 10);
-    assert(node.active);
+    assert(node2.price == 10);
+    assert(node2.active);
 
     std::cout << "[PASS] BuyFIFOPriority\n";
 
