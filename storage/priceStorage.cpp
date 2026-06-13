@@ -116,11 +116,15 @@ bool priceStorage::isSellPriceLevelEmpty(int price){
 }
 
 bool priceStorage::sellOneNodeCheck(int price){
-    return sellPriceLevelStorage[price][0] == sellPriceLevelStorage[price][1];
+    auto it = sellPriceLevelStorage.find(price);
+    if (it == sellPriceLevelStorage.end()) return false;
+    return it->second[0] == it->second[1];
 }
 
 bool priceStorage::buyOneNodeCheck(int price){
-    return buyPriceLevelStorage[price][0] == buyPriceLevelStorage[price][1];
+    auto it = buyPriceLevelStorage.find(price);
+    if (it == buyPriceLevelStorage.end()) return false;
+    return it->second[0] == it->second[1];
 }
 
 void priceStorage::removePriceLevel(Side side, int price){
@@ -136,14 +140,14 @@ void priceStorage::removePriceLevel(Side side, int price){
 void priceStorage::qtyZeroHandle(orderNode node){
     if (node.side == Side::BUY && !(buyOneNodeCheck(node.price))){
         if (node.prevIndex == -1){
-            updateBuyHead(node);
+            buyPriceLevelStorage[node.price][0] = node.nextIndex;
         }
         else if (node.nextIndex == -1){
             buyPriceLevelStorage[node.price][1] = node.prevIndex;
         }
     }
 
-    if (node.side == Side::SELL && !(sellOneNodeCheck(node.price))){
+    else if (node.side == Side::SELL && !(sellOneNodeCheck(node.price))){
         if (node.prevIndex == -1){
             updateSellHead(node);
         }
@@ -152,7 +156,7 @@ void priceStorage::qtyZeroHandle(orderNode node){
         }
     }
 
-    if (node.side == Side::BUY && buyOneNodeCheck(node.price)){
+    else if (node.side == Side::BUY && buyOneNodeCheck(node.price)){
         removePriceLevel(node.side, node.price);
     }
 

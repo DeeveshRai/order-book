@@ -106,6 +106,26 @@ int main() {
                 std::cout << "node id: " << node.id << "\n" << " node price: " << node.price << "\n" << " node qty: " << node.qty << "\n" << " node prevIndex: " << node.prevIndex <<
                 "\n" << " node nextIndex: " << node.nextIndex << "\n" << " node side: " << node.side << "\n" << "node type: "<< node.type << "\n" << "node active?" << node.active << "\n"; 
             }
+
+            if (prices.buyPriceLevelStorage.empty()){
+                std::cout << "buy empty" << "\n";
+            }
+
+            for (auto& orderNode : prices.buyPriceLevelStorage){
+                std::cout << " Buy Price: " << orderNode.first << "\n" << " Head: " <<  orderNode.second[0] << "\n" << " Tail: " << orderNode.second[1] << "\n";   
+            }
+
+            if (prices.sellPriceLevelStorage.empty()){
+                std::cout << "sell empty" << "\n";
+            }
+
+            for (auto& orderNode : prices.sellPriceLevelStorage){
+                std::cout << " Sell Price: " << orderNode.first << "\n" << " Head: " <<  orderNode.second[0] << "\n" << " Tail: " << orderNode.second[1] << "\n";    
+            }
+
+            for (auto& id : ids.idStore){
+                std::cout << " ids: " << id.first << "\n" << "index" << id.second << "\n";
+            }
         }
     }
     

@@ -24,21 +24,23 @@ void Cancel::cancelOrder(int id){
     else if (node.prevIndex == -1){
         //Handle replacing head
         orderNode& newNext = nodes_.getNode(node.nextIndex);
-        prices_.replaceHead(node.prevIndex, node.price, node.side);
+        prices_.replaceHead(node.nextIndex, node.price, node.side);
         ids_.removeOrderById(id);
         node.active = false;
         newNext.prevIndex = -1;
         node.prevIndex = -2;
+        node.nextIndex = -2;
 
     }
     
     else if(node.nextIndex == -1){
         //Handle replacing tail
         orderNode& newPrev = nodes_.getNode(node.prevIndex);
-        prices_.replaceTail(node.nextIndex, node.price, node.side);
+        prices_.replaceTail(node.prevIndex, node.price, node.side);
         ids_.removeOrderById(id);
         node.active = false;
         newPrev.nextIndex = -1;
+        node.prevIndex = -2;
         node.nextIndex = -2;
 
     }

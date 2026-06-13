@@ -29,7 +29,7 @@ CANCELLATION:
 - You are to try EVERY test case within this file, and construct a testresults.md file
 - In this testresults.md file say which tests passed and failed with no extra information
 
-## Test 1 - Exact Match
+## Test 1 - Exact Match - Done
 
 ### Input
 
@@ -47,7 +47,7 @@ Sell book empty
 
 ---
 
-## Test 2 - Partial Fill Buy Survives
+## Test 2 - Partial Fill Buy Survives - Done
 
 ### Input
 
@@ -64,7 +64,7 @@ BUY 50 @ 10 remains
 
 ---
 
-## Test 3 - Partial Fill Sell Survives
+## Test 3 - Partial Fill Sell Survives - Done
 
 ### Input
 
@@ -81,8 +81,7 @@ SELL 50 @ 10 remains
 
 ---
 
-## Test 4 - Multi-Level Market Buy
-
+## Test 4 - Multi-Level Market Buy - DONE
 ### Input
 
 ```text
@@ -103,7 +102,7 @@ MARKET BUY 250
 
 ---
 
-## Test 5 - Multi-Level Market Sell
+## Test 5 - Multi-Level Market Sell - DONE
 
 ### Input
 
@@ -125,7 +124,7 @@ MARKET SELL 250
 
 ---
 
-## Test 6 - FIFO Priority (Sell Side)
+## Test 6 - FIFO Priority (Sell Side) - Done
 
 ### Input
 
@@ -147,7 +146,7 @@ Third order untouched
 
 ---
 
-## Test 7 - FIFO Priority (Buy Side)
+## Test 7 - FIFO Priority (Buy Side) - Done
 
 ### Input
 
@@ -169,7 +168,7 @@ Third order untouched
 
 ---
 
-## Test 8 - Head Removal
+## Test 8 - Head Removal - Done
 
 ### Input
 
@@ -189,7 +188,7 @@ Remaining qty = 90
 
 ---
 
-## Test 9 - Crossing Multiple Levels
+## Test 9 - Crossing Multiple Levels - DONE
 
 ### Input
 
@@ -212,7 +211,7 @@ BUY 50 @ 10
 
 ---
 
-## Test 10 - Non-Crossing Order
+## Test 10 - Non-Crossing Order - Done
 
 ### Input
 
@@ -235,7 +234,7 @@ SELL 50 @ 11
 
 ---
 
-## Test 11 - Market Buy Empty Book
+## Test 11 - Market Buy Empty Book - Done
 
 ### Input
 
@@ -252,7 +251,7 @@ Book unchanged
 
 ---
 
-## Test 12 - Market Sell Empty Book
+## Test 12 - Market Sell Empty Book - Done
 
 ### Input
 
@@ -269,7 +268,7 @@ Book unchanged
 
 ---
 
-## Test 13 - Single Node Cancellation
+## Test 13 - Single Node Cancellation - Done
 
 ### Input
 
@@ -289,7 +288,7 @@ ID removed
 
 ---
 
-## Test 14 - Head Cancellation
+## Test 14 - Head Cancellation - Done
 
 ### Input
 
@@ -308,7 +307,7 @@ Second order becomes head
 
 ---
 
-## Test 15 - Tail Cancellation
+## Test 15 - Tail Cancellation - Done
 
 ### Input
 
@@ -327,7 +326,7 @@ First order remains head and tail
 
 ---
 
-## Test 16 - Middle Cancellation
+## Test 16 - Middle Cancellatio - Done
 
 ### Input
 
@@ -347,7 +346,7 @@ CANCEL <middle id>
 
 ---
 
-## Test 17 - Price Level Removal
+## Test 17 - Price Level Removal - Done
 
 ### Input
 
@@ -365,7 +364,7 @@ No dead levels remain
 
 ---
 
-## Test 18 - Mixed Chaos Test
+## Test 18 - Mixed Chaos Test - Done
 
 ### Input
 

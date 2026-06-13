@@ -15,6 +15,7 @@ class idMap{
         orderNode& getNodeById(int id);
         void removeOrderById(int id);
         void addNodeToStore(int id, int index);
+        bool isIdStoreEmpty();
 
         void dumpStore();
 

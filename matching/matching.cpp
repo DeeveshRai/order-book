@@ -29,6 +29,7 @@ void Matching::checkLimitOrder(LimitOrder order){
 
         if (order.side == Side::BUY){
             Matching::limitBuy(order.price, order.qty);
+        
         }
         
         else if (order.side == Side::SELL){
@@ -40,11 +41,22 @@ void Matching::checkLimitOrder(LimitOrder order){
 
 void Matching::checkMarketOrder(MarketOrder order){
     if (order.side == Side::BUY){
-        Matching::marketBuy(order.qty);
+        if (prices_.isSellStoreEmpty()){
+            return;
+        }
+        else{
+            Matching::marketBuy(order.qty);
+        }
     }
 
     else if (order.side == Side::SELL){
-        Matching::marketSell(order.qty);
+        if (prices_.isBuyStoreEmpty()){
+            return;
+        }
+
+        else{
+            Matching::marketSell(order.qty);
+        }    
     }
 }
 
@@ -162,7 +174,7 @@ void Matching::limitSell(int limitSellPrice, int limitSellQty){
             bestBidNode.qty = 0;
             qtyInOrder = 0;
             bestBidNode.active = false;
-            prices_.qtyZeroHandle(bestBidNode);
+            prices_.qtyZeroHandle(bestBidNode); //SOMETHING IS BREAKING IT IN HERE
             ids_.removeOrderById(bestBidNode.id);
         }
         else{
@@ -170,6 +182,7 @@ void Matching::limitSell(int limitSellPrice, int limitSellQty){
             bestBidNode.active = false;
             bestBidNode.qty = 0;
             ids_.removeOrderById(bestBidNode.id);
+            
 
             //IF ONLY ONE NODE IN PL
             if (prices_.buyOneNodeCheck(bestBidNode.price)){

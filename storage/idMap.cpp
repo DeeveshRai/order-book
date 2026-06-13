@@ -19,6 +19,10 @@ void idMap::addNodeToStore(int id, int index){
     idStore.insert({id, index});
 }
 
+bool idMap::isIdStoreEmpty(){
+    return idStore.empty();
+}
+
 // void idMap::dumpStore(){
 //     for (auto& id : idStore){
 //         std::cout << " ids: " << id.first << "\n" << "index" << id.second << "\n";
