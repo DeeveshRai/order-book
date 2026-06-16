@@ -3,10 +3,12 @@
 #include "storage/priceStorage.h"
 #include "storage/idMap.h"
 #include <iostream>
+#include "matching.h"
 
 // TODO:
 // Replace all node/price-level traversal logic
 // with getNextMatchableBid()/Ask() helper after V1.
+// Basically move all current logic into helper functions
 
 using namespace std;
 
@@ -60,18 +62,16 @@ void Matching::checkMarketOrder(MarketOrder order){
     }
 }
 
+void Matching::removeFilledNode(orderNode &node){
+    node.qty = 0;
+    node.active = false;
+    prices_.qtyZeroHandle(node);
+    ids_.removeOrderById(node.id);
+}
+
+//PLAN: Instead of branching, do function -> FindNextAsk()
+//Replace 
 void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
-
-    if (prices_.isSellStoreEmpty()){
-        
-        int currBuyTailIndex = prices_.getBuyTailIndex(limitBuyPrice);
-        orderNode newNode = nodes_.addNode(OrderType::LIMIT, Side::BUY, limitBuyQty, limitBuyPrice, currBuyTailIndex, -1);
-        prices_.updateBuyTail(limitBuyPrice);
-        int newBuyTailIndex = prices_.getBuyTailIndex(limitBuyPrice);
-        ids_.addNodeToStore(newNode.id, newBuyTailIndex);
-
-        return;
-    }
 
     int qtyInOrder =  limitBuyQty;
     int bestAsk = prices_.bestAskPrice();
@@ -88,11 +88,8 @@ void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
         
         }
         else if(qtyInOrder == bestAskNode.qty){
-            bestAskNode.qty = 0;
             qtyInOrder = 0;
-            bestAskNode.active = false;
-            prices_.qtyZeroHandle(bestAskNode);
-            ids_.removeOrderById(bestAskNode.id);
+            removeFilledNode(bestAskNode);
         } 
         else{
             qtyInOrder = qtyInOrder - bestAskNode.qty;
@@ -127,6 +124,7 @@ void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
         
     }
 
+    //Can Replace with addRemainingToBook.
     if (qtyInOrder > 0){
 
         if (prices_.isBuyPriceLevelEmpty(limitBuyPrice)){
@@ -171,11 +169,8 @@ void Matching::limitSell(int limitSellPrice, int limitSellQty){
             qtyInOrder = 0;
         }
         else if(qtyInOrder == bestBidNode.qty){
-            bestBidNode.qty = 0;
             qtyInOrder = 0;
-            bestBidNode.active = false;
-            prices_.qtyZeroHandle(bestBidNode); //SOMETHING IS BREAKING IT IN HERE
-            ids_.removeOrderById(bestBidNode.id);
+            removeFilledNode(bestBidNode);
         }
         else{
             qtyInOrder = qtyInOrder - bestBidNode.qty; 

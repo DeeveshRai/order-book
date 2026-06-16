@@ -4,6 +4,8 @@
 #include <cstdlib>
 #include "nodeStorage.h"
 
+//TODO: Need to implement actual UUID logic
+
 // std::vector<int> NodeStorage::emptyIndexes(std::vector<orderNode> array){
 //     //IMPLEMENT LATER
 //     return {};

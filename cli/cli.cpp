@@ -10,6 +10,11 @@
 
 using namespace std;
 
+//TODO: Need to refactor CLI so its cleaner (more robust with exception handling and custom messages),
+// and announced when orders have been added, filled (partial or full) and cancelled
+
+//Instead of doing cancellation and orders in different "modes" try and make it so its arg based instaed
+
 OrderType parseOrderType(string orderType){
     if (orderType == "LIMIT"){
         OrderType type = OrderType::LIMIT;
@@ -44,14 +49,16 @@ int main() {
     Matching match(nodes, prices, ids);
     Cancel cancel(nodes, prices, ids);
 
+    std::cout << "Order Book Start... \n" << "Select a mode: \n" << "1. Orders\n" << "2. Cancellation\n" ;
     //Temp condition
     while (true){
-
+        
         string S;
         getline(cin, S);
 
         if (S == "1"){
 
+            std::cout << "Enter Order: \n";
             //TEMP TRUE WHILE LOOP JUST TO GET IT RUNNING
             while (true){  
                 string S, T;

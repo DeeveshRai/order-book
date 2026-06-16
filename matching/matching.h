@@ -3,6 +3,7 @@
 
 #include "data/limitOrder.h"
 #include "data/marketOrder.h"
+#include "data/orderNode.h"
 
 class NodeStorage;
 class priceStorage;
@@ -18,6 +19,7 @@ class Matching {
         void doMarketMatching(OrderType type, Side side, int qty);
         void checkLimitOrder(LimitOrder order);
         void checkMarketOrder(MarketOrder order);
+        void removeFilledNode(orderNode& node);
         void dumpBook();
 
     private:
