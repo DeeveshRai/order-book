@@ -3,6 +3,7 @@
 
 #include "data/orderNode.h"
 #include <vector>
+#include <cstdint>
 
 class NodeStorage {
     public:
@@ -17,6 +18,7 @@ class NodeStorage {
 
     private:
         std::vector<int> emptyIndexes(std::vector<orderNode> array);
+        std::uint64_t nextId_ = 1;
         //Make function that gets updates node for next index
         
 };

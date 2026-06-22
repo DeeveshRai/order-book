@@ -1,5 +1,6 @@
 #include "storage/nodeStorage.h"
 #include <cstddef>
+#include <ctime>
 #include <iostream>
 #include <cstdlib>
 #include "nodeStorage.h"
@@ -22,9 +23,9 @@ int NodeStorage::getSize(){
 
 orderNode NodeStorage::addNode(OrderType type, Side side, int qty, double price, int prev, int next){
     //TODO: IMPLEMENT UUID LOGIC 
-    int rand = std::rand() % 10000;
+    uint64_t id = nextId_++;
 
-    orderNode newNode{rand, type, side, qty, price, prev, next, true};
+    orderNode newNode{static_cast<int>(id), type, side, qty, price, prev, next, true};
     store.push_back(newNode);
 
     return newNode;
