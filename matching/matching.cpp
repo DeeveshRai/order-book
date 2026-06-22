@@ -3,10 +3,12 @@
 #include "storage/priceStorage.h"
 #include "storage/idMap.h"
 #include <iostream>
+#include "matching.h"
 
 // TODO:
 // Replace all node/price-level traversal logic
 // with getNextMatchableBid()/Ask() helper after V1.
+// Basically move all current logic into helper functions
 
 using namespace std;
 
@@ -60,18 +62,17 @@ void Matching::checkMarketOrder(MarketOrder order){
     }
 }
 
+void Matching::removeFilledNode(orderNode &node){
+    node.qty = 0;
+    node.active = false;
+    prices_.qtyZeroHandle(node);
+    ids_.removeOrderById(node.id);
+}
+
+
+//PLAN: Instead of branching, do function -> FindNextAsk()
+//Replace 
 void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
-
-    if (prices_.isSellStoreEmpty()){
-        
-        int currBuyTailIndex = prices_.getBuyTailIndex(limitBuyPrice);
-        orderNode newNode = nodes_.addNode(OrderType::LIMIT, Side::BUY, limitBuyQty, limitBuyPrice, currBuyTailIndex, -1);
-        prices_.updateBuyTail(limitBuyPrice);
-        int newBuyTailIndex = prices_.getBuyTailIndex(limitBuyPrice);
-        ids_.addNodeToStore(newNode.id, newBuyTailIndex);
-
-        return;
-    }
 
     int qtyInOrder =  limitBuyQty;
     int bestAsk = prices_.bestAskPrice();
@@ -88,27 +89,30 @@ void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
         
         }
         else if(qtyInOrder == bestAskNode.qty){
-            bestAskNode.qty = 0;
             qtyInOrder = 0;
-            bestAskNode.active = false;
-            prices_.qtyZeroHandle(bestAskNode);
-            ids_.removeOrderById(bestAskNode.id);
+            removeFilledNode(bestAskNode);
         } 
         else{
             qtyInOrder = qtyInOrder - bestAskNode.qty;
+            //Very Similar to removeFilledNode helper logic
             bestAskNode.active = false;
             bestAskNode.qty = 0;
             ids_.removeOrderById(bestAskNode.id);
+            //
             
 
+            //Can merge the price helper methods so Buy and Sell in same,
+            //Then can put all this logic into a matching help
             if (prices_.sellOneNodeCheck(bestAskNode.price)){
                 
                 prices_.updateSellHeadEdgeCase(bestAskNode);
 
                 if (prices_.hasMatchableAsks(limitBuyPrice)){
+                    //FindNextAsk
                     bestAsk = prices_.bestAskPrice();
                     bestAskIndex = prices_.getSellHeadIndex(bestAsk);
                     currentIndex = bestAskIndex;
+                    //FindNextAsk
                     continue;
                 }
                 
@@ -127,6 +131,7 @@ void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
         
     }
 
+    //Can Replace with addRemainingToBook.
     if (qtyInOrder > 0){
 
         if (prices_.isBuyPriceLevelEmpty(limitBuyPrice)){
@@ -149,15 +154,7 @@ void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
 }
 
 void Matching::limitSell(int limitSellPrice, int limitSellQty){
-    if (prices_.isBuyStoreEmpty()){
-        int currSellTailIndex = prices_.getSellTailIndex(limitSellPrice);
-        orderNode newNode = nodes_.addNode(OrderType::LIMIT, Side::SELL, limitSellQty, limitSellPrice, currSellTailIndex, -1);
-        prices_.updateSellTail(limitSellPrice);
-        int index = prices_.getSellTailIndex(limitSellPrice);
-        ids_.addNodeToStore(newNode.id, index);
 
-        return;
-    }
     int qtyInOrder = limitSellQty;
     int bestBid = prices_.bestBidPrice();
     int bestBidIndex = prices_.getBuyHeadIndex(bestBid);
@@ -171,11 +168,8 @@ void Matching::limitSell(int limitSellPrice, int limitSellQty){
             qtyInOrder = 0;
         }
         else if(qtyInOrder == bestBidNode.qty){
-            bestBidNode.qty = 0;
             qtyInOrder = 0;
-            bestBidNode.active = false;
-            prices_.qtyZeroHandle(bestBidNode); //SOMETHING IS BREAKING IT IN HERE
-            ids_.removeOrderById(bestBidNode.id);
+            removeFilledNode(bestBidNode);
         }
         else{
             qtyInOrder = qtyInOrder - bestBidNode.qty; 

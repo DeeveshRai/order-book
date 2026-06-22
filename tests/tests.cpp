@@ -1,50 +1,38 @@
-#include "../storage/nodeStorage.h"
-#include "../storage/priceStorage.h"
-#include "../storage/idMap.h"
-#include "../matching/matching.h"
-#include "../cancel/cancel.h"
-
-#include "../data/limitOrder.h"
+#include "orderbook/orderBook.h"
 
 #include <assert.h>
 #include <iostream>
 
+//TODO: Need to refactor so there's a OrderBook struct used to instaniate all classes used instead of doing them individually
+
 void testExactMatch()
 {
-    NodeStorage nodes;
-    priceStorage prices(nodes);
-    idMap ids(nodes);
+    OrderBook book;
 
-    Matching matching(nodes, prices, ids);
-
-    matching.checkLimitOrder(
+    book.getMatching().checkLimitOrder(
         LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
 
-    matching.checkLimitOrder(
+    book.getMatching().checkLimitOrder(
        LimitOrder{1, OrderType::LIMIT, Side::SELL, 100, 10});
 
-    assert(prices.isBuyStoreEmpty());
-    assert(prices.isSellStoreEmpty());
+    assert(book.getPrices().isBuyStoreEmpty());
+    assert(book.getPrices().isSellStoreEmpty());
 
     std::cout << "[PASS] ExactMatch\n";
 }
 
 void testPartialFillBuy(){
-    NodeStorage nodes;
-    priceStorage prices(nodes);
-    idMap ids(nodes);
+    OrderBook book;
 
-    Matching matching(nodes, prices, ids);
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 50, 10});
 
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 50, 10});;
+    assert(!book.getPrices().isBuyStoreEmpty());
+    assert(book.getPrices().isSellStoreEmpty());
 
-    assert(!prices.isBuyStoreEmpty());
-    assert(prices.isSellStoreEmpty());
+    int headIndex = book.getPrices().getBuyHeadIndex(10);
 
-    int headIndex = prices.getBuyHeadIndex(10);
-
-    orderNode& node = nodes.getNode(headIndex);
+    orderNode& node = book.getNodes().getNode(headIndex);
 
     assert(node.qty == 50);
     assert(node.price == 10);
@@ -55,20 +43,17 @@ void testPartialFillBuy(){
 }
 
 void testPartialFillSell(){
-    NodeStorage nodes;
-    priceStorage prices(nodes);
-    idMap ids(nodes);
-    Matching matching(nodes, prices, ids);
+    OrderBook book;
 
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 100, 10});
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 50, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 100, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 50, 10});
 
-    assert(!prices.isSellStoreEmpty());
-    assert(prices.isBuyStoreEmpty());
+    assert(!book.getPrices().isSellStoreEmpty());
+    assert(book.getPrices().isBuyStoreEmpty());
 
-    int headIndex = prices.getSellHeadIndex(10);
+    int headIndex = book.getPrices().getSellHeadIndex(10);
 
-    orderNode& node = nodes.getNode(headIndex);
+    orderNode& node = book.getNodes().getNode(headIndex);
 
     assert(node.qty == 50);
     assert(node.price == 10);
@@ -79,22 +64,19 @@ void testPartialFillSell(){
 }
 
 void testMultiLevelMarketBuy(){
-    NodeStorage nodes;
-    priceStorage prices(nodes);
-    idMap ids(nodes);
-    Matching matching(nodes, prices, ids);
+    OrderBook book;
 
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 100, 10});
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 100, 11});
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 100, 12});
-    matching.checkMarketOrder(MarketOrder{1, OrderType::MARKET, Side::BUY, 250});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 100, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 100, 11});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 100, 12});
+    book.getMatching().checkMarketOrder(MarketOrder{1, OrderType::MARKET, Side::BUY, 250});
 
-    assert(prices.isBuyStoreEmpty());
-    assert(!prices.isSellStoreEmpty());
+    assert(book.getPrices().isBuyStoreEmpty());
+    assert(!book.getPrices().isSellStoreEmpty());
 
-    int headIndex = prices.getSellHeadIndex(12);
+    int headIndex = book.getPrices().getSellHeadIndex(12);
 
-    orderNode& node = nodes.getNode(headIndex);
+    orderNode& node = book.getNodes().getNode(headIndex);
 
     assert(node.qty == 50);
     assert(node.price == 12);
@@ -105,22 +87,19 @@ void testMultiLevelMarketBuy(){
 }
 
 void testMultiLevelMarketSell(){
-    NodeStorage nodes;
-    priceStorage prices(nodes);
-    idMap ids(nodes);
-    Matching matching(nodes, prices, ids);
+    OrderBook book;
 
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 12});
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
-    matching.checkMarketOrder(MarketOrder{1, OrderType::MARKET, Side::SELL, 250});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 12});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
+    book.getMatching().checkMarketOrder(MarketOrder{1, OrderType::MARKET, Side::SELL, 250});
 
-    assert(!prices.isBuyStoreEmpty());
-    assert(prices.isSellStoreEmpty());
+    assert(!book.getPrices().isBuyStoreEmpty());
+    assert(book.getPrices().isSellStoreEmpty());
 
-    int headIndex = prices.getBuyHeadIndex(10);
+    int headIndex = book.getPrices().getBuyHeadIndex(10);
 
-    orderNode& node = nodes.getNode(headIndex);
+    orderNode& node = book.getNodes().getNode(headIndex);
 
     assert(node.qty == 50);
     assert(node.price == 10);
@@ -131,28 +110,25 @@ void testMultiLevelMarketSell(){
 }
 
 void testSellFIFOPriority(){
-    NodeStorage nodes;
-    priceStorage prices(nodes);
-    idMap ids(nodes);
-    Matching matching(nodes, prices, ids);
+    OrderBook book;
 
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 100, 10});
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 90, 10});
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 80, 10});
-    matching.checkMarketOrder(MarketOrder{1, OrderType::MARKET, Side::BUY, 150});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 100, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 90, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 80, 10});
+    book.getMatching().checkMarketOrder(MarketOrder{1, OrderType::MARKET, Side::BUY, 150});
 
-    assert(prices.isBuyStoreEmpty());
-    assert(!prices.isSellStoreEmpty());
+    assert(book.getPrices().isBuyStoreEmpty());
+    assert(!book.getPrices().isSellStoreEmpty());
 
-    int headIndex = prices.getSellHeadIndex(10);
+    int headIndex = book.getPrices().getSellHeadIndex(10);
 
-    orderNode& node = nodes.getNode(headIndex);
+    orderNode& node = book.getNodes().getNode(headIndex);
 
     assert(node.qty == 40);
     assert(node.price == 10);
     assert(node.active);
 
-    orderNode& node2 = nodes.getNode(node.nextIndex);
+    orderNode& node2 = book.getNodes().getNode(node.nextIndex);
     
     assert(node2.qty == 80);
     assert(node2.price == 10);
@@ -163,28 +139,25 @@ void testSellFIFOPriority(){
 }
 
 void testBuyFIFOPriority(){
-    NodeStorage nodes;
-    priceStorage prices(nodes);
-    idMap ids(nodes);
-    Matching matching(nodes, prices, ids);
+    OrderBook book;
 
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 90, 10});
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 80, 10});
-    matching.checkMarketOrder(MarketOrder{1, OrderType::MARKET, Side::SELL, 150});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 90, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 80, 10});
+    book.getMatching().checkMarketOrder(MarketOrder{1, OrderType::MARKET, Side::SELL, 150});
 
-    assert(!prices.isBuyStoreEmpty());
-    assert(prices.isSellStoreEmpty());
+    assert(!book.getPrices().isBuyStoreEmpty());
+    assert(book.getPrices().isSellStoreEmpty());
 
-    int headIndex = prices.getBuyHeadIndex(10);
+    int headIndex = book.getPrices().getBuyHeadIndex(10);
 
-    orderNode& node = nodes.getNode(headIndex);
+    orderNode& node = book.getNodes().getNode(headIndex);
 
     assert(node.qty == 40);
     assert(node.price == 10);
     assert(node.active);
 
-    orderNode& node2 = nodes.getNode(node.nextIndex);
+    orderNode& node2 = book.getNodes().getNode(node.nextIndex);
     
     assert(node2.qty == 80);
     assert(node2.price == 10);
@@ -195,21 +168,18 @@ void testBuyFIFOPriority(){
 }
 
 void testHeadRemoval(){
-    NodeStorage nodes;
-    priceStorage prices(nodes);
-    idMap ids(nodes);
-    Matching matching(nodes, prices, ids);
+    OrderBook book;
 
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 90, 10});
-    matching.checkMarketOrder(MarketOrder{1, OrderType::MARKET, Side::SELL, 100});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 90, 10});
+    book.getMatching().checkMarketOrder(MarketOrder{1, OrderType::MARKET, Side::SELL, 100});
 
-    assert(!prices.isBuyStoreEmpty());
-    assert(prices.isSellStoreEmpty());
+    assert(!book.getPrices().isBuyStoreEmpty());
+    assert(book.getPrices().isSellStoreEmpty());
 
-    int headIndex = prices.getBuyHeadIndex(10);
+    int headIndex = book.getPrices().getBuyHeadIndex(10);
 
-    orderNode& node = nodes.getNode(headIndex);
+    orderNode& node = book.getNodes().getNode(headIndex);
 
     assert(node.qty == 90);
     assert(node.price == 10);
@@ -220,22 +190,19 @@ void testHeadRemoval(){
 }
 
 void testCrossingMultipleLevels(){
-    NodeStorage nodes;
-    priceStorage prices(nodes);
-    idMap ids(nodes);
-    Matching matching(nodes, prices, ids);
+    OrderBook book;
 
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 11});
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 150, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 11});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 150, 10});
     
 
-    assert(!prices.isBuyStoreEmpty());
-    assert(prices.isSellStoreEmpty());
+    assert(!book.getPrices().isBuyStoreEmpty());
+    assert(book.getPrices().isSellStoreEmpty());
 
-    int headIndex = prices.getBuyHeadIndex(10);
+    int headIndex = book.getPrices().getBuyHeadIndex(10);
 
-    orderNode& node = nodes.getNode(headIndex);
+    orderNode& node = book.getNodes().getNode(headIndex);
 
     assert(node.qty == 50);
     assert(node.price == 10);
@@ -245,30 +212,27 @@ void testCrossingMultipleLevels(){
 }
 
 void testNonCrossingOrder(){
-    NodeStorage nodes;
-    priceStorage prices(nodes);
-    idMap ids(nodes);
-    Matching matching(nodes, prices, ids);
+    OrderBook book;
 
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 11});
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 150, 11});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 11});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 150, 11});
     
 
-    assert(!prices.isBuyStoreEmpty());
-    assert(!prices.isSellStoreEmpty());
+    assert(!book.getPrices().isBuyStoreEmpty());
+    assert(!book.getPrices().isSellStoreEmpty());
 
-    int headIndex = prices.getBuyHeadIndex(10);
+    int headIndex = book.getPrices().getBuyHeadIndex(10);
 
-    orderNode& node = nodes.getNode(headIndex);
+    orderNode& node = book.getNodes().getNode(headIndex);
 
     assert(node.qty == 100);
     assert(node.price == 10);
     assert(node.active);
 
-    headIndex = prices.getSellHeadIndex(11);
+    headIndex = book.getPrices().getSellHeadIndex(11);
 
-    orderNode& sellNode = nodes.getNode(headIndex);
+    orderNode& sellNode = book.getNodes().getNode(headIndex);
 
     assert(sellNode.qty == 50);
     assert(sellNode.price == 11);
@@ -278,78 +242,64 @@ void testNonCrossingOrder(){
 }
 
 void testMarketBuyEmptyBook(){
-    NodeStorage nodes;
-    priceStorage prices(nodes);
-    idMap ids(nodes);
-    Matching matching(nodes, prices, ids);
+    OrderBook book;
 
-    matching.checkMarketOrder(MarketOrder{1, OrderType::MARKET, Side::BUY, 100});
+    book.getMatching().checkMarketOrder(MarketOrder{1, OrderType::MARKET, Side::BUY, 100});
 
-    assert(prices.isBuyStoreEmpty());
-    assert(prices.isSellStoreEmpty());
+    assert(book.getPrices().isBuyStoreEmpty());
+    assert(book.getPrices().isSellStoreEmpty());
 
     std::cout << "[PASS] MarketBuyBookEmpty\n";
 }
 
 void testMarketSellEmptyBook(){
-    NodeStorage nodes;
-    priceStorage prices(nodes);
-    idMap ids(nodes);
-    Matching matching(nodes, prices, ids);
+    OrderBook book;
 
-    matching.checkMarketOrder(MarketOrder{1, OrderType::MARKET, Side::SELL, 100});
+    book.getMatching().checkMarketOrder(MarketOrder{1, OrderType::MARKET, Side::SELL, 100});
 
-    assert(prices.isBuyStoreEmpty());
-    assert(prices.isSellStoreEmpty());
+    assert(book.getPrices().isBuyStoreEmpty());
+    assert(book.getPrices().isSellStoreEmpty());
 
     std::cout << "[PASS] MarketSellBookEmpty\n";
 }
 
 void testSingleNodeCancellation(){
-    NodeStorage nodes;
-    priceStorage prices(nodes);
-    idMap ids(nodes);
-    Matching matching(nodes, prices, ids);
-    Cancel cancel(nodes, prices, ids);
+    OrderBook book;
 
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
 
-    int headIndex = prices.getBuyHeadIndex(10);
+    int headIndex = book.getPrices().getBuyHeadIndex(10);
 
-    orderNode& node = nodes.getNode(headIndex);
+    orderNode& node = book.getNodes().getNode(headIndex);
 
-    cancel.cancelOrder(node.id);
+    book.getCancel().cancelOrder(node.id);
 
-    assert(prices.isBuyStoreEmpty());
-    assert(prices.isSellStoreEmpty());
-    assert(ids.isIdStoreEmpty());
+    assert(book.getPrices().isBuyStoreEmpty());
+    assert(book.getPrices().isSellStoreEmpty());
+    assert(book.getIds().isIdStoreEmpty());
 
     std::cout << "[PASS] SingleNodeCancellation\n";
 
 }
 
 void testHeadCancellation(){
-    NodeStorage nodes;
-    priceStorage prices(nodes);
-    idMap ids(nodes);
-    Matching matching(nodes, prices, ids);
-    Cancel cancel(nodes, prices, ids);
+    OrderBook book;
 
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 90, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 90, 10});
 
-    int headIndex = prices.getBuyHeadIndex(10);
+    int headIndex = book.getPrices().getBuyHeadIndex(10);
 
-    orderNode& node = nodes.getNode(headIndex);
+    orderNode& node = book.getNodes().getNode(headIndex);
 
-    cancel.cancelOrder(node.id);
+    book.getCancel().cancelOrder(node.id);
 
-    assert(!prices.isBuyStoreEmpty());
-    assert(prices.isSellStoreEmpty());
+    assert(!book.getPrices().isBuyStoreEmpty());
+    assert(book.getPrices().isSellStoreEmpty());
 
-    headIndex = prices.getBuyHeadIndex(10);
+    headIndex = book.getPrices().getBuyHeadIndex(10);
 
-    orderNode& node2 = nodes.getNode(headIndex);
+    orderNode& node2 = book.getNodes().getNode(headIndex);
 
     assert(node2.qty == 90);
     assert(node2.price == 10);
@@ -360,27 +310,23 @@ void testHeadCancellation(){
 }
 
 void testTailCancellation(){
-    NodeStorage nodes;
-    priceStorage prices(nodes);
-    idMap ids(nodes);
-    Matching matching(nodes, prices, ids);
-    Cancel cancel(nodes, prices, ids);
+    OrderBook book;
 
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 90, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 90, 10});
 
-    int tailIndex = prices.getBuyTailIndex(10);
+    int tailIndex = book.getPrices().getBuyTailIndex(10);
 
-    orderNode& node = nodes.getNode(tailIndex);
+    orderNode& node = book.getNodes().getNode(tailIndex);
 
-    cancel.cancelOrder(node.id);
+    book.getCancel().cancelOrder(node.id);
 
-    assert(!prices.isBuyStoreEmpty());
-    assert(prices.isSellStoreEmpty());
+    assert(!book.getPrices().isBuyStoreEmpty());
+    assert(book.getPrices().isSellStoreEmpty());
 
-    tailIndex = prices.getBuyTailIndex(10);
+    tailIndex = book.getPrices().getBuyTailIndex(10);
 
-    orderNode& node2 = nodes.getNode(tailIndex);
+    orderNode& node2 = book.getNodes().getNode(tailIndex);
 
     assert(node2.qty == 100);
     assert(node2.price == 10);
@@ -390,34 +336,30 @@ void testTailCancellation(){
 }
 
 void testMiddleCancellation(){
-    NodeStorage nodes;
-    priceStorage prices(nodes);
-    idMap ids(nodes);
-    Matching matching(nodes, prices, ids);
-    Cancel cancel(nodes, prices, ids);
+    OrderBook book;
 
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 90, 10});
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 80, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 90, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 80, 10});
 
-    int headIndex = prices.getBuyHeadIndex(10);
+    int headIndex = book.getPrices().getBuyHeadIndex(10);
 
-    orderNode& node = nodes.getNode(headIndex);
+    orderNode& node = book.getNodes().getNode(headIndex);
 
     int midIndex = node.nextIndex;
 
-    orderNode& midNode = nodes.getNode(midIndex);
+    orderNode& midNode = book.getNodes().getNode(midIndex);
 
-    cancel.cancelOrder(midNode.id);
+    book.getCancel().cancelOrder(midNode.id);
 
-    assert(!prices.isBuyStoreEmpty());
-    assert(prices.isSellStoreEmpty());
+    assert(!book.getPrices().isBuyStoreEmpty());
+    assert(book.getPrices().isSellStoreEmpty());
 
-    headIndex = prices.getBuyHeadIndex(10);
-    int tailIndex = prices.getBuyTailIndex(10);
+    headIndex = book.getPrices().getBuyHeadIndex(10);
+    int tailIndex = book.getPrices().getBuyTailIndex(10);
 
-    orderNode& headNode = nodes.getNode(headIndex);
-    orderNode& tailNode = nodes.getNode(tailIndex);
+    orderNode& headNode = book.getNodes().getNode(headIndex);
+    orderNode& tailNode = book.getNodes().getNode(tailIndex);
     
     assert(headNode.qty == 100);
     assert(headNode.nextIndex == tailIndex);
@@ -429,56 +371,49 @@ void testMiddleCancellation(){
 }
 
 void testPriceLevelRemoval(){
-    NodeStorage nodes;
-    priceStorage prices(nodes);
-    idMap ids(nodes);
-    Matching matching(nodes, prices, ids);
+    OrderBook book;
 
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 100, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 100, 10});
 
-    assert(prices.isBuyPriceLevelEmpty(10));
-    assert(prices.isBuyStoreEmpty());
-    assert(prices.isSellStoreEmpty());
+    assert(book.getPrices().isBuyPriceLevelEmpty(10));
+    assert(book.getPrices().isBuyStoreEmpty());
+    assert(book.getPrices().isSellStoreEmpty());
 
     std::cout << "[PASS] PriceLevelRemoval\n";
 }
 
 void testMixedChaos(){
-    NodeStorage nodes;
-    priceStorage prices(nodes);
-    idMap ids(nodes);
-    Matching matching(nodes, prices, ids);
-    Cancel cancel(nodes, prices, ids);
+    OrderBook book;
 
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 90, 10});
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 80, 10});
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 50, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 90, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 80, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 50, 10});
 
-    int headIndex = prices.getBuyHeadIndex(10);
+    int headIndex = book.getPrices().getBuyHeadIndex(10);
 
-    orderNode& node = nodes.getNode(headIndex);
+    orderNode& node = book.getNodes().getNode(headIndex);
 
     int midIndex = node.nextIndex;
 
-    orderNode& midNode = nodes.getNode(midIndex);
+    orderNode& midNode = book.getNodes().getNode(midIndex);
 
-    cancel.cancelOrder(midNode.id);
+    book.getCancel().cancelOrder(midNode.id);
 
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 60, 10});
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 120, 10});
-    matching.checkMarketOrder(MarketOrder{1, OrderType::MARKET, Side::SELL, 170});
-    matching.checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 100, 11});
-    matching.checkMarketOrder(MarketOrder{1, OrderType::MARKET, Side::BUY, 200});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 60, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 120, 10});
+    book.getMatching().checkMarketOrder(MarketOrder{1, OrderType::MARKET, Side::SELL, 170});
+    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 100, 11});
+    book.getMatching().checkMarketOrder(MarketOrder{1, OrderType::MARKET, Side::BUY, 200});
 
-    assert(!prices.isBuyStoreEmpty());
-    assert(!prices.isBuyPriceLevelEmpty(10));
-    assert(prices.isSellStoreEmpty());
+    assert(!book.getPrices().isBuyStoreEmpty());
+    assert(!book.getPrices().isBuyPriceLevelEmpty(10));
+    assert(book.getPrices().isSellStoreEmpty());
 
-    headIndex = prices.getBuyHeadIndex(10);
+    headIndex = book.getPrices().getBuyHeadIndex(10);
 
-    orderNode& headNode = nodes.getNode(headIndex);
+    orderNode& headNode = book.getNodes().getNode(headIndex);
 
     assert(headNode.qty == 20);
     assert(headNode.price == 10);
@@ -486,8 +421,8 @@ void testMixedChaos(){
     assert(headNode.nextIndex == -1);
     assert(headNode.prevIndex == -1);
 
-    assert(!ids.isIdStoreEmpty());
-    assert(ids.idStore[headNode.id] == headIndex);
+    assert(!book.getIds().isIdStoreEmpty());
+    assert(book.getIds().idStore[headNode.id] == headIndex);
 
     std::cout << "[PASS] MixedChaos\n";
 }
