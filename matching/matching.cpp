@@ -69,6 +69,7 @@ void Matching::removeFilledNode(orderNode &node){
     ids_.removeOrderById(node.id);
 }
 
+
 //PLAN: Instead of branching, do function -> FindNextAsk()
 //Replace 
 void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
@@ -93,19 +94,25 @@ void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
         } 
         else{
             qtyInOrder = qtyInOrder - bestAskNode.qty;
+            //Very Similar to removeFilledNode helper logic
             bestAskNode.active = false;
             bestAskNode.qty = 0;
             ids_.removeOrderById(bestAskNode.id);
+            //
             
 
+            //Can merge the price helper methods so Buy and Sell in same,
+            //Then can put all this logic into a matching help
             if (prices_.sellOneNodeCheck(bestAskNode.price)){
                 
                 prices_.updateSellHeadEdgeCase(bestAskNode);
 
                 if (prices_.hasMatchableAsks(limitBuyPrice)){
+                    //FindNextAsk
                     bestAsk = prices_.bestAskPrice();
                     bestAskIndex = prices_.getSellHeadIndex(bestAsk);
                     currentIndex = bestAskIndex;
+                    //FindNextAsk
                     continue;
                 }
                 
@@ -147,15 +154,7 @@ void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
 }
 
 void Matching::limitSell(int limitSellPrice, int limitSellQty){
-    if (prices_.isBuyStoreEmpty()){
-        int currSellTailIndex = prices_.getSellTailIndex(limitSellPrice);
-        orderNode newNode = nodes_.addNode(OrderType::LIMIT, Side::SELL, limitSellQty, limitSellPrice, currSellTailIndex, -1);
-        prices_.updateSellTail(limitSellPrice);
-        int index = prices_.getSellTailIndex(limitSellPrice);
-        ids_.addNodeToStore(newNode.id, index);
 
-        return;
-    }
     int qtyInOrder = limitSellQty;
     int bestBid = prices_.bestBidPrice();
     int bestBidIndex = prices_.getBuyHeadIndex(bestBid);
