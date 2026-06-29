@@ -7,6 +7,19 @@
 | 100 price levels  | 0.540s |
 | 1000 price levels | 0.831s |
 
+1 Price Level      - 0.174515s
+10 Price Levels    - 0.268242s
+100 Price Levels   - 0.540022s
+1000 Price Levels  - 0.830629s - now Elapsed Time: 0.772857000s
+
+Alternating Match  - 0.517022s
+Deep Book          - 0.740722s
+
+Cancellation (1M)  - 0.076362s
+
+Matching (-O0)     - 1.270780s
+Matching (-O3)     - 0.301290s
+
 
 
 ## Environment

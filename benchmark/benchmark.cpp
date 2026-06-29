@@ -182,7 +182,7 @@ int main(){
 
         for (int i = 0; i < 1000000; i++) {
             book.getMatching().checkLimitOrder(
-                LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, static_cast<double>(rand() % 1000)});
+                LimitOrder{1, OrderType::LIMIT, Side::SELL, 100, static_cast<double>(rand() % 1000)});
 
         }
 
@@ -190,9 +190,14 @@ int main(){
 
         for (int i = 0; i < 1000000; i++){
             book.getMatching().checkLimitOrder(
-                LimitOrder{1, OrderType::LIMIT, Side::SELL, 100, static_cast<double>(rand() % 1000)});
+                LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, static_cast<double>(rand() % 1000)});
         }
     }
+
+    std::cout<< "Matchable Asks Call: " << book.getMatching().hasMatchableAskCalls << "\n";
+    std::cout<< "Best Asks Calls: " << book.getMatching().bestAskCalls<< "\n";
+    std::cout<< "Get Sell Head Calls: " << book.getMatching().getHeadCalls<< "\n";
+
 
 
 }
