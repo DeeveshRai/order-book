@@ -182,7 +182,7 @@ int main(){
 
         for (int i = 0; i < 1000000; i++) {
             book.getMatching().checkLimitOrder(
-                LimitOrder{1, OrderType::LIMIT, Side::SELL, 100, static_cast<double>(rand() % 1000)});
+                LimitOrder{1, OrderType::LIMIT, Side::SELL, 100, static_cast<double>(500 + (rand() % 11) - 5)});
 
         }
 
@@ -190,7 +190,7 @@ int main(){
 
         for (int i = 0; i < 1000000; i++){
             book.getMatching().checkLimitOrder(
-                LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, static_cast<double>(rand() % 1000)});
+                LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, static_cast<double>(500 + (rand() % 11) - 5)});
         }
     }
 
