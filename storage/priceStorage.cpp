@@ -13,6 +13,14 @@ int priceStorage::bestBidPrice(){
     return bestBid_;
 }
 
+int priceStorage::bestAskHeadIndex(){
+    return bestAskHeadIndex_;
+}
+
+int priceStorage::bestBidHeadIndex(){
+    return bestBidHeadIndex_;
+}
+
 int priceStorage::getBuyHeadIndex(int price){
     auto it = buyPriceLevelStorage.find(price);
     if (it == buyPriceLevelStorage.end()) return -1;
@@ -65,9 +73,12 @@ void priceStorage::updateSellHeadEdgeCase(orderNode node){
     sellPriceLevelStorage.erase(node.price); 
     if (sellPriceLevelStorage.empty()) {
         bestAsk_ = INT_MAX;
+        bestAskHeadIndex_ = -1;
     }
     else {
-        bestAsk_ = sellPriceLevelStorage.begin()->first;
+        auto it = sellPriceLevelStorage.begin();
+        bestAsk_ = it->first;
+        bestAskHeadIndex_ = it->second[0];
     }
 }
 
@@ -77,9 +88,12 @@ void priceStorage::updateBuyHeadEdgeCase(orderNode node){
 
     if (buyPriceLevelStorage.empty()) {
         bestBid_ = INT_MIN;
+        bestBidHeadIndex_ = -1;
     }
     else {
-        bestBid_ = buyPriceLevelStorage.rbegin()->first;
+        auto it = buyPriceLevelStorage.rbegin();
+        bestBid_ = it->first;
+        bestBidHeadIndex_ = it->second[0];
     }
 }
 
@@ -87,16 +101,20 @@ void priceStorage::insertPriceLevel(int price, int prevIndex, int nextIndex, Sid
     if (side == Side::BUY){
         buyPriceLevelStorage.insert({price, {prevIndex, nextIndex}});
 
-        if (price > bestBid_)
+        if (price > bestBid_){
             bestBid_ = price;
+            bestBidHeadIndex_ = prevIndex;
+        }
         
     }
 
     else if (side == Side::SELL){
         sellPriceLevelStorage.insert({price, {prevIndex, nextIndex}});
 
-        if (price < bestAsk_)
+        if (price < bestAsk_){
             bestAsk_ = price;
+            bestAskHeadIndex_ = prevIndex;
+        }
     }
 }
 

@@ -18,6 +18,8 @@ class priceStorage{
         int getSellHeadIndex(int idx);
         int bestAskPrice();
         int bestBidPrice();
+        int bestAskHeadIndex();
+        int bestBidHeadIndex();
         void updateBuyTail(int price);
         void updateSellTail(int price);
         void updateSellHead(orderNode node);
@@ -45,8 +47,8 @@ class priceStorage{
         NodeStorage& nodes_;
         int bestAsk_ = INT_MAX;
         int bestBid_ = INT_MIN;
-        int bestAskHead;
-        int bestBidHead;
+        int bestAskHeadIndex_;
+        int bestBidHeadIndex_;
         
 };
 
