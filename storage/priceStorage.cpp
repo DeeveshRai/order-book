@@ -1,16 +1,16 @@
 #include "storage/priceStorage.h" 
 #include "storage/nodeStorage.h"
 #include "priceStorage.h"
+#include <climits>
 #include <iostream>
 
 int priceStorage::bestAskPrice(){
-    if (sellPriceLevelStorage.empty()) return -1;
-    return sellPriceLevelStorage.begin()->first;
+    return bestAsk_;
 }
 
+
 int priceStorage::bestBidPrice(){
-    if (buyPriceLevelStorage.empty()) return -1;
-    return buyPriceLevelStorage.rbegin()->first;
+    return bestBid_;
 }
 
 int priceStorage::getBuyHeadIndex(int price){
@@ -61,21 +61,42 @@ void priceStorage::updateBuyHead(orderNode node){
 }
 
 void priceStorage::updateSellHeadEdgeCase(orderNode node){
-    sellPriceLevelStorage.erase(node.price);
+
+    sellPriceLevelStorage.erase(node.price); 
+    if (sellPriceLevelStorage.empty()) {
+        bestAsk_ = INT_MAX;
+    }
+    else {
+        bestAsk_ = sellPriceLevelStorage.begin()->first;
+    }
 }
 
 void priceStorage::updateBuyHeadEdgeCase(orderNode node){
+
     buyPriceLevelStorage.erase(node.price);
+
+    if (buyPriceLevelStorage.empty()) {
+        bestBid_ = INT_MIN;
+    }
+    else {
+        bestBid_ = buyPriceLevelStorage.rbegin()->first;
+    }
 }
 
-void priceStorage::addToEmptyBook(int price, int prevIndex, int nextIndex, Side side){
+void priceStorage::insertPriceLevel(int price, int prevIndex, int nextIndex, Side side){
     if (side == Side::BUY){
         buyPriceLevelStorage.insert({price, {prevIndex, nextIndex}});
+
+        if (price > bestBid_)
+            bestBid_ = price;
         
     }
 
     else if (side == Side::SELL){
         sellPriceLevelStorage.insert({price, {prevIndex, nextIndex}});
+
+        if (price < bestAsk_)
+            bestAsk_ = price;
     }
 }
 
@@ -128,12 +149,33 @@ bool priceStorage::buyOneNodeCheck(int price){
 }
 
 void priceStorage::removePriceLevel(Side side, int price){
+
     if (side == Side::BUY){
-        buyPriceLevelStorage.erase(price);
+        buyPriceLevelStorage.erase(price); 
+
+        if (price == bestBid_){
+            if (isBuyStoreEmpty()){
+                bestBid_ = INT_MIN;
+            }
+            else{
+                bestBid_ = buyPriceLevelStorage.rbegin()->first;
+            }
+        }
     }
 
     else if (side == Side::SELL){
+
         sellPriceLevelStorage.erase(price);
+        if (price == bestAsk_){
+
+            if (isSellStoreEmpty()){
+                bestAsk_ = INT_MAX;
+            }
+            else{
+                bestAsk_ = sellPriceLevelStorage.begin()->first;
+            }
+        }
+        
     }
 }
 
@@ -149,12 +191,14 @@ void priceStorage::qtyZeroHandle(orderNode node){
 
     else if (node.side == Side::SELL && !(sellOneNodeCheck(node.price))){
         if (node.prevIndex == -1){
-            updateSellHead(node);
+            sellPriceLevelStorage[node.price][0] = node.nextIndex;  // Direct assignment, not updateSellHead()
         }
         else if (node.nextIndex == -1){
             sellPriceLevelStorage[node.price][1] = node.prevIndex;
         }
     }
+
+    //MUTATION OF STORE
 
     else if (node.side == Side::BUY && buyOneNodeCheck(node.price)){
         removePriceLevel(node.side, node.price);

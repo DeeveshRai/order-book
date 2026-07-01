@@ -13,17 +13,18 @@
 using namespace std;
 
 void Matching::checkLimitOrder(LimitOrder order){
+    hasMatchableAskCalls++;
     if ((order.side == Side::BUY) && prices_.isBuyPriceLevelEmpty(order.price) && !prices_.hasMatchableAsks(order.price) && (order.type == OrderType::LIMIT)){  
         orderNode newNode = nodes_.addNode(order.type, order.side, order.qty, order.price, -1, -1);
         ids_.addNodeToStore(newNode.id, nodes_.getSize()-1);
-        prices_.addToEmptyBook(order.price, nodes_.getSize() -1, nodes_.getSize() -1, order.side);
+        prices_.insertPriceLevel(order.price, nodes_.getSize() -1, nodes_.getSize() -1, order.side); //Can set PL
         return;
     }
 
     else if ((order.side == Side::SELL) && !prices_.hasMatchableBids(order.price) && prices_.isSellPriceLevelEmpty(order.price) && (order.type == OrderType::LIMIT)){
         orderNode newNode = nodes_.addNode(order.type, order.side, order.qty, order.price, -1, -1);
         ids_.addNodeToStore(newNode.id, nodes_.getSize()-1);
-        prices_.addToEmptyBook(order.price, nodes_.getSize() -1, nodes_.getSize() -1, order.side);
+        prices_.insertPriceLevel(order.price, nodes_.getSize() -1, nodes_.getSize() -1, order.side); //Can set PL
         return;
     }
 
@@ -75,7 +76,7 @@ void Matching::removeFilledNode(orderNode &node){
 void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
 
     int qtyInOrder =  limitBuyQty;
-    int bestAsk = prices_.bestAskPrice();
+    int bestAsk = prices_.bestAskPrice();  
     int bestAskIndex = prices_.getSellHeadIndex(bestAsk);
     int currentIndex = bestAskIndex;
 
@@ -89,6 +90,7 @@ void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
         
         }
         else if(qtyInOrder == bestAskNode.qty){
+            //Can mutate sell store - FIXED
             qtyInOrder = 0;
             removeFilledNode(bestAskNode);
         } 
@@ -98,19 +100,19 @@ void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
             bestAskNode.active = false;
             bestAskNode.qty = 0;
             ids_.removeOrderById(bestAskNode.id);
-            //
             
 
             //Can merge the price helper methods so Buy and Sell in same,
             //Then can put all this logic into a matching help
             if (prices_.sellOneNodeCheck(bestAskNode.price)){
                 
-                prices_.updateSellHeadEdgeCase(bestAskNode);
-
+                prices_.removePriceLevel(Side::SELL, bestAskNode.price);
+                
+                hasMatchableAskCalls++;
                 if (prices_.hasMatchableAsks(limitBuyPrice)){
                     //FindNextAsk
                     bestAsk = prices_.bestAskPrice();
-                    bestAskIndex = prices_.getSellHeadIndex(bestAsk);
+                    bestAskIndex = prices_.getSellHeadIndex(bestAsk); //Need counter
                     currentIndex = bestAskIndex;
                     //FindNextAsk
                     continue;
@@ -136,7 +138,7 @@ void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
 
         if (prices_.isBuyPriceLevelEmpty(limitBuyPrice)){
             orderNode newNode = nodes_.addNode(OrderType::LIMIT, Side::BUY, qtyInOrder, limitBuyPrice, -1, -1);
-            prices_.addToEmptyBook(limitBuyPrice, nodes_.getSize() -1, nodes_.getSize() -1, Side::BUY);
+            prices_.insertPriceLevel(limitBuyPrice, nodes_.getSize() -1, nodes_.getSize() -1, Side::BUY);
             int index = prices_.getBuyTailIndex(limitBuyPrice);
             ids_.addNodeToStore(newNode.id, index);
 
@@ -180,7 +182,7 @@ void Matching::limitSell(int limitSellPrice, int limitSellQty){
 
             //IF ONLY ONE NODE IN PL
             if (prices_.buyOneNodeCheck(bestBidNode.price)){
-                prices_.updateBuyHeadEdgeCase(bestBidNode);
+                 prices_.removePriceLevel(Side::BUY, bestBidNode.price);
 
                 if (prices_.hasMatchableBids(limitSellPrice)){
 
@@ -200,7 +202,6 @@ void Matching::limitSell(int limitSellPrice, int limitSellQty){
                 nodes_.unlinkNode(bestBidNode);
                 currentIndex = nextIndex;
                 //Get node's index
-                bestBid = bestBidNode.price;
             }
         }  
     }
@@ -208,7 +209,7 @@ void Matching::limitSell(int limitSellPrice, int limitSellQty){
 
         if (prices_.isSellPriceLevelEmpty(limitSellPrice)){
             orderNode newNode = nodes_.addNode(OrderType::LIMIT, Side::SELL, qtyInOrder, limitSellPrice, -1, -1);
-            prices_.addToEmptyBook(newNode.price, nodes_.getSize() -1, nodes_.getSize() -1, newNode.side);
+            prices_.insertPriceLevel(newNode.price, nodes_.getSize() -1, nodes_.getSize() -1, newNode.side);
             int index = prices_.getSellTailIndex(limitSellPrice);
             ids_.addNodeToStore(newNode.id, index);
 
@@ -230,7 +231,7 @@ void Matching::marketBuy(int marketBuyQty){
     int bestAskIndex = prices_.getSellHeadIndex(bestAsk);
     int currentIndex = bestAskIndex;
 
-    while (qtyInOrder > 0 && bestAsk){
+    while (qtyInOrder > 0 && bestAsk){   
         orderNode& bestAskNode = nodes_.getNode(currentIndex);
 
         if (qtyInOrder < bestAskNode.qty){
@@ -254,7 +255,7 @@ void Matching::marketBuy(int marketBuyQty){
 
             if (prices_.sellOneNodeCheck(bestAskNode.price)){
                 prices_.updateSellHeadEdgeCase(bestAskNode);
-                
+
                 if (!prices_.isSellStoreEmpty()){
                     bestAsk = prices_.bestAskPrice();
                     bestAskIndex = prices_.getSellHeadIndex(bestAsk);
@@ -271,7 +272,6 @@ void Matching::marketBuy(int marketBuyQty){
                 prices_.updateSellHead(bestAskNode); 
                 nodes_.unlinkNode(bestAskNode);
                 currentIndex = nextIndex;
-                bestAsk = bestAskNode.price; //Redundant
             }
         }
     }
@@ -328,7 +328,6 @@ void Matching::marketSell(int marketSellQty){
                 prices_.updateBuyHead(bestBidNode);
                 nodes_.unlinkNode(bestBidNode);
                 currentIndex = nextIndex;
-                bestBid = bestBidNode.price;
             }
         }
     }

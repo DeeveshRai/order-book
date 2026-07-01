@@ -4,6 +4,7 @@
 #include "data/limitOrder.h"
 #include "data/marketOrder.h"
 #include "data/orderNode.h"
+#include <cstdint>
 
 class NodeStorage;
 class priceStorage;
@@ -21,6 +22,13 @@ class Matching {
         void checkMarketOrder(MarketOrder order);
         void removeFilledNode(orderNode& node);
         void dumpBook();
+
+        std::uint64_t bestBidCalls_ = 0;
+        std::uint64_t bestAskCalls = 0;
+        std::uint64_t hasMatchableBidCalls = 0;
+        std::uint64_t hasMatchableAskCalls = 0;
+        std::uint64_t getHeadCalls = 0;
+        std::uint64_t erasePriceLevelCalls = 0;
 
     private:
         // Attributes

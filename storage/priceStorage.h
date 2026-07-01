@@ -4,6 +4,7 @@
 #include <map>
 #include <vector>
 #include "data/orderNode.h"
+#include <climits>
 
 class NodeStorage;
 
@@ -23,7 +24,7 @@ class priceStorage{
         void updateBuyHead(orderNode node);
         void updateSellHeadEdgeCase(orderNode node);
         void updateBuyHeadEdgeCase(orderNode node);
-        void addToEmptyBook(int price, int prevIndex, int nextIndex, Side side);
+        void insertPriceLevel(int price, int prevIndex, int nextIndex, Side side);
         int getBuyTailIndex(int price);
         int getBuyHeadIndex(int price);
         int getSellTailIndex(int price);
@@ -42,6 +43,10 @@ class priceStorage{
 
     private:
         NodeStorage& nodes_;
+        int bestAsk_ = INT_MAX;
+        int bestBid_ = INT_MIN;
+        int bestAskHead;
+        int bestBidHead;
         
 };
 
