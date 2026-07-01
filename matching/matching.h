@@ -17,8 +17,8 @@ class Matching {
         // Methods
         void doLimitMatching(OrderType type, Side side, int qty, double price);
         void doMarketMatching(OrderType type, Side side, int qty);
-        void checkLimitOrder(LimitOrder order);
-        void checkMarketOrder(MarketOrder order);
+        void checkLimitOrder(const LimitOrder& order);
+        void checkMarketOrder(const MarketOrder& order);
         void removeFilledNode(orderNode& node);
         void dumpBook();
 
