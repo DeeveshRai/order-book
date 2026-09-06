@@ -20,11 +20,8 @@ int NodeStorage::getSize(){
     return store.size();
 }
 
-const orderNode& NodeStorage::addNode(OrderType type, Side side, int qty, double price, int prev, int next){
-    //TODO: IMPLEMENT UUID LOGIC 
-    int rand = std::rand() % 10000;
-
-    store.push_back({rand, type, side, qty, price, prev, next, true});
+const orderNode& NodeStorage::addNode(int id, OrderType type, Side side, int qty, double price, int prev, int next){
+    store.push_back({id, type, side, qty, price, prev, next, true});
 
     return store.back();
 }

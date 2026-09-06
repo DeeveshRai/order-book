@@ -5,15 +5,20 @@
 
 //TODO: Need to refactor so there's a OrderBook struct used to instaniate all classes used instead of doing them individually
 
+int nextTestId() {
+    static int id = 1;
+    return id++;
+}
+
 void testExactMatch()
 {
     OrderBook book;
 
     book.getMatching().checkLimitOrder(
-        LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
+        LimitOrder{nextTestId(), OrderType::LIMIT, Side::BUY, 100, 10});
 
     book.getMatching().checkLimitOrder(
-       LimitOrder{1, OrderType::LIMIT, Side::SELL, 100, 10});
+       LimitOrder{nextTestId(), OrderType::LIMIT, Side::SELL, 100, 10});
 
     assert(book.getPrices().isBuyStoreEmpty());
     assert(book.getPrices().isSellStoreEmpty());
@@ -24,8 +29,8 @@ void testExactMatch()
 void testPartialFillBuy(){
     OrderBook book;
 
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 50, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::BUY, 100, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::SELL, 50, 10});
 
     assert(!book.getPrices().isBuyStoreEmpty());
     assert(book.getPrices().isSellStoreEmpty());
@@ -45,8 +50,8 @@ void testPartialFillBuy(){
 void testPartialFillSell(){
     OrderBook book;
 
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 100, 10});
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 50, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::SELL, 100, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::BUY, 50, 10});
 
     assert(!book.getPrices().isSellStoreEmpty());
     assert(book.getPrices().isBuyStoreEmpty());
@@ -66,10 +71,10 @@ void testPartialFillSell(){
 void testMultiLevelMarketBuy(){
     OrderBook book;
 
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 100, 10});
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 100, 11});
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 100, 12});
-    book.getMatching().checkMarketOrder(MarketOrder{1, OrderType::MARKET, Side::BUY, 250});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::SELL, 100, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::SELL, 100, 11});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::SELL, 100, 12});
+    book.getMatching().checkMarketOrder(MarketOrder{nextTestId(), OrderType::MARKET, Side::BUY, 250});
 
     assert(book.getPrices().isBuyStoreEmpty());
     assert(!book.getPrices().isSellStoreEmpty());
@@ -89,10 +94,10 @@ void testMultiLevelMarketBuy(){
 void testMultiLevelMarketSell(){
     OrderBook book;
 
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 12});
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
-    book.getMatching().checkMarketOrder(MarketOrder{1, OrderType::MARKET, Side::SELL, 250});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::BUY, 100, 12});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::BUY, 100, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::BUY, 100, 10});
+    book.getMatching().checkMarketOrder(MarketOrder{nextTestId(), OrderType::MARKET, Side::SELL, 250});
 
     assert(!book.getPrices().isBuyStoreEmpty());
     assert(book.getPrices().isSellStoreEmpty());
@@ -112,10 +117,10 @@ void testMultiLevelMarketSell(){
 void testSellFIFOPriority(){
     OrderBook book;
 
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 100, 10});
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 90, 10});
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 80, 10});
-    book.getMatching().checkMarketOrder(MarketOrder{1, OrderType::MARKET, Side::BUY, 150});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::SELL, 100, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::SELL, 90, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::SELL, 80, 10});
+    book.getMatching().checkMarketOrder(MarketOrder{nextTestId(), OrderType::MARKET, Side::BUY, 150});
 
     assert(book.getPrices().isBuyStoreEmpty());
     assert(!book.getPrices().isSellStoreEmpty());
@@ -141,10 +146,10 @@ void testSellFIFOPriority(){
 void testBuyFIFOPriority(){
     OrderBook book;
 
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 90, 10});
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 80, 10});
-    book.getMatching().checkMarketOrder(MarketOrder{1, OrderType::MARKET, Side::SELL, 150});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::BUY, 100, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::BUY, 90, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::BUY, 80, 10});
+    book.getMatching().checkMarketOrder(MarketOrder{nextTestId(), OrderType::MARKET, Side::SELL, 150});
 
     assert(!book.getPrices().isBuyStoreEmpty());
     assert(book.getPrices().isSellStoreEmpty());
@@ -170,9 +175,9 @@ void testBuyFIFOPriority(){
 void testHeadRemoval(){
     OrderBook book;
 
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 90, 10});
-    book.getMatching().checkMarketOrder(MarketOrder{1, OrderType::MARKET, Side::SELL, 100});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::BUY, 100, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::BUY, 90, 10});
+    book.getMatching().checkMarketOrder(MarketOrder{nextTestId(), OrderType::MARKET, Side::SELL, 100});
 
     assert(!book.getPrices().isBuyStoreEmpty());
     assert(book.getPrices().isSellStoreEmpty());
@@ -192,9 +197,9 @@ void testHeadRemoval(){
 void testCrossingMultipleLevels(){
     OrderBook book;
 
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 11});
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 150, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::BUY, 100, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::BUY, 100, 11});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::SELL, 150, 10});
     
 
     assert(!book.getPrices().isBuyStoreEmpty());
@@ -214,9 +219,9 @@ void testCrossingMultipleLevels(){
 void testNonCrossingOrder(){
     OrderBook book;
 
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 11});
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 150, 11});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::BUY, 100, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::BUY, 100, 11});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::SELL, 150, 11});
     
 
     assert(!book.getPrices().isBuyStoreEmpty());
@@ -244,7 +249,7 @@ void testNonCrossingOrder(){
 void testMarketBuyEmptyBook(){
     OrderBook book;
 
-    book.getMatching().checkMarketOrder(MarketOrder{1, OrderType::MARKET, Side::BUY, 100});
+    book.getMatching().checkMarketOrder(MarketOrder{nextTestId(), OrderType::MARKET, Side::BUY, 100});
 
     assert(book.getPrices().isBuyStoreEmpty());
     assert(book.getPrices().isSellStoreEmpty());
@@ -255,7 +260,7 @@ void testMarketBuyEmptyBook(){
 void testMarketSellEmptyBook(){
     OrderBook book;
 
-    book.getMatching().checkMarketOrder(MarketOrder{1, OrderType::MARKET, Side::SELL, 100});
+    book.getMatching().checkMarketOrder(MarketOrder{nextTestId(), OrderType::MARKET, Side::SELL, 100});
 
     assert(book.getPrices().isBuyStoreEmpty());
     assert(book.getPrices().isSellStoreEmpty());
@@ -266,7 +271,7 @@ void testMarketSellEmptyBook(){
 void testSingleNodeCancellation(){
     OrderBook book;
 
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::BUY, 100, 10});
 
     int headIndex = book.getPrices().getBuyHeadIndex(10);
 
@@ -285,8 +290,8 @@ void testSingleNodeCancellation(){
 void testHeadCancellation(){
     OrderBook book;
 
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 90, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::BUY, 100, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::BUY, 90, 10});
 
     int headIndex = book.getPrices().getBuyHeadIndex(10);
 
@@ -312,8 +317,8 @@ void testHeadCancellation(){
 void testTailCancellation(){
     OrderBook book;
 
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 90, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::BUY, 100, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::BUY, 90, 10});
 
     int tailIndex = book.getPrices().getBuyTailIndex(10);
 
@@ -338,9 +343,9 @@ void testTailCancellation(){
 void testMiddleCancellation(){
     OrderBook book;
 
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 90, 10});
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 80, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::BUY, 100, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::BUY, 90, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::BUY, 80, 10});
 
     int headIndex = book.getPrices().getBuyHeadIndex(10);
 
@@ -373,8 +378,8 @@ void testMiddleCancellation(){
 void testPriceLevelRemoval(){
     OrderBook book;
 
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 100, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::BUY, 100, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::SELL, 100, 10});
 
     assert(book.getPrices().isBuyPriceLevelEmpty(10));
     assert(book.getPrices().isBuyStoreEmpty());
@@ -386,10 +391,10 @@ void testPriceLevelRemoval(){
 void testMixedChaos(){
     OrderBook book;
 
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 100, 10});
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 90, 10});
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 80, 10});
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 50, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::BUY, 100, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::BUY, 90, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::BUY, 80, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::SELL, 50, 10});
 
     int headIndex = book.getPrices().getBuyHeadIndex(10);
 
@@ -401,11 +406,11 @@ void testMixedChaos(){
 
     book.getCancel().cancelOrder(midNode.id);
 
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 60, 10});
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::BUY, 120, 10});
-    book.getMatching().checkMarketOrder(MarketOrder{1, OrderType::MARKET, Side::SELL, 170});
-    book.getMatching().checkLimitOrder(LimitOrder{1, OrderType::LIMIT, Side::SELL, 100, 11});
-    book.getMatching().checkMarketOrder(MarketOrder{1, OrderType::MARKET, Side::BUY, 200});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::SELL, 60, 10});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::BUY, 120, 10});
+    book.getMatching().checkMarketOrder(MarketOrder{nextTestId(), OrderType::MARKET, Side::SELL, 170});
+    book.getMatching().checkLimitOrder(LimitOrder{nextTestId(), OrderType::LIMIT, Side::SELL, 100, 11});
+    book.getMatching().checkMarketOrder(MarketOrder{nextTestId(), OrderType::MARKET, Side::BUY, 200});
 
     assert(!book.getPrices().isBuyStoreEmpty());
     assert(!book.getPrices().isBuyPriceLevelEmpty(10));
@@ -450,4 +455,5 @@ int main(){
 
     std::cout<<"All Tests Pass" << "\n";
 }
+
 

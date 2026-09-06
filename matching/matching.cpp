@@ -14,14 +14,14 @@ using namespace std;
 
 void Matching::checkLimitOrder(const LimitOrder& order){
     if ((order.side == Side::BUY) && prices_.isBuyPriceLevelEmpty(order.price) && !prices_.hasMatchableAsks(order.price) && (order.type == OrderType::LIMIT)){  
-        const orderNode& newNode = nodes_.addNode(order.type, order.side, order.qty, order.price, -1, -1);
+        const orderNode& newNode = nodes_.addNode(order.id, order.type, order.side, order.qty, order.price, -1, -1);
         ids_.addNodeToStore(newNode.id, nodes_.getSize()-1);
         prices_.addToEmptyBook(order.price, nodes_.getSize() -1, nodes_.getSize() -1, order.side);
         return;
     }
 
     else if ((order.side == Side::SELL) && !prices_.hasMatchableBids(order.price) && prices_.isSellPriceLevelEmpty(order.price) && (order.type == OrderType::LIMIT)){
-        const orderNode& newNode = nodes_.addNode(order.type, order.side, order.qty, order.price, -1, -1);
+        const orderNode& newNode = nodes_.addNode(order.id, order.type, order.side, order.qty, order.price, -1, -1);
         ids_.addNodeToStore(newNode.id, nodes_.getSize()-1);
         prices_.addToEmptyBook(order.price, nodes_.getSize() -1, nodes_.getSize() -1, order.side);
         return;
@@ -30,12 +30,12 @@ void Matching::checkLimitOrder(const LimitOrder& order){
     else {
 
         if (order.side == Side::BUY){
-            Matching::limitBuy(order.price, order.qty);
+            Matching::limitBuy(order.price, order.qty, order.id);
         
         }
         
         else if (order.side == Side::SELL){
-            Matching::limitSell(order.price, order.qty);
+            Matching::limitSell(order.price, order.qty, order.id);
         }
     }
 
@@ -72,7 +72,7 @@ void Matching::removeFilledNode(orderNode& node){
 
 //PLAN: Instead of branching, do function -> FindNextAsk()
 //Replace 
-void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
+void Matching::limitBuy(int limitBuyPrice, int limitBuyQty, int orderId){
 
     int qtyInOrder =  limitBuyQty;
     int bestAsk = prices_.bestAskPrice();
@@ -135,7 +135,7 @@ void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
     if (qtyInOrder > 0){
 
         if (prices_.isBuyPriceLevelEmpty(limitBuyPrice)){
-            const orderNode& newNode = nodes_.addNode(OrderType::LIMIT, Side::BUY, qtyInOrder, limitBuyPrice, -1, -1);
+            const orderNode& newNode = nodes_.addNode(orderId, OrderType::LIMIT, Side::BUY, qtyInOrder, limitBuyPrice, -1, -1);
             prices_.addToEmptyBook(limitBuyPrice, nodes_.getSize() -1, nodes_.getSize() -1, Side::BUY);
             int index = prices_.getBuyTailIndex(limitBuyPrice);
             ids_.addNodeToStore(newNode.id, index);
@@ -143,7 +143,7 @@ void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
         }
         else{
             int prev = prices_.getBuyTailIndex(limitBuyPrice); 
-            const orderNode& newNode = nodes_.addNode(OrderType::LIMIT, Side::BUY, qtyInOrder, limitBuyPrice, prev, -1);
+            const orderNode& newNode = nodes_.addNode(orderId, OrderType::LIMIT, Side::BUY, qtyInOrder, limitBuyPrice, prev, -1);
             prices_.updateBuyTail(limitBuyPrice);
             int index = prices_.getBuyTailIndex(limitBuyPrice);
             ids_.addNodeToStore(newNode.id, index);
@@ -153,7 +153,7 @@ void Matching::limitBuy(int limitBuyPrice, int limitBuyQty){
 
 }
 
-void Matching::limitSell(int limitSellPrice, int limitSellQty){
+void Matching::limitSell(int limitSellPrice, int limitSellQty, int orderId){
 
     int qtyInOrder = limitSellQty;
     int bestBid = prices_.bestBidPrice();
@@ -207,7 +207,7 @@ void Matching::limitSell(int limitSellPrice, int limitSellQty){
     if (qtyInOrder > 0){
 
         if (prices_.isSellPriceLevelEmpty(limitSellPrice)){
-            const orderNode& newNode = nodes_.addNode(OrderType::LIMIT, Side::SELL, qtyInOrder, limitSellPrice, -1, -1);
+            const orderNode& newNode = nodes_.addNode(orderId, OrderType::LIMIT, Side::SELL, qtyInOrder, limitSellPrice, -1, -1);
             prices_.addToEmptyBook(newNode.price, nodes_.getSize() -1, nodes_.getSize() -1, newNode.side);
             int index = prices_.getSellTailIndex(limitSellPrice);
             ids_.addNodeToStore(newNode.id, index);
@@ -215,7 +215,7 @@ void Matching::limitSell(int limitSellPrice, int limitSellQty){
         }
         else{
             int prev = prices_.getSellTailIndex(limitSellPrice);
-            const orderNode& newNode = nodes_.addNode(OrderType::LIMIT, Side::SELL, qtyInOrder, limitSellPrice, prev, -1);
+            const orderNode& newNode = nodes_.addNode(orderId, OrderType::LIMIT, Side::SELL, qtyInOrder, limitSellPrice, prev, -1);
             prices_.updateSellTail(limitSellPrice);
             int index = prices_.getSellTailIndex(limitSellPrice);
             ids_.addNodeToStore(newNode.id, index);

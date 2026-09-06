@@ -10,7 +10,7 @@ class NodeStorage {
 
         std::vector<orderNode> store;
         orderNode& getNode(int index);
-        const orderNode& addNode(OrderType type, Side side, int qty, double price, int prev, int next);
+        const orderNode& addNode(int id, OrderType type, Side side, int qty, double price, int prev, int next);
         int getSize();
         void removeNode(int index);
         void unlinkNode(orderNode& node);

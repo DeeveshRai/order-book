@@ -31,8 +31,8 @@ class Matching {
         // Methods
         
         
-        void limitBuy(int price, int qty);
-        void limitSell(int price, int qty);
+        void limitBuy(int price, int qty, int orderId);
+        void limitSell(int price, int qty, int orderId);
         void marketBuy(int qty);
         void marketSell(int qty);
         
